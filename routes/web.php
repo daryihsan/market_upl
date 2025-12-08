@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ReviewController; 
 use App\Models\Category;
+use App\Http\Controllers\SearchController;
+
+// Pencarian Produk
+Route::get('/search', [SearchController::class, 'search'])->name('search');
+// Pencarian Produk (dropdown suggestion, AJAX)
+Route::get('/search/suggest', [SearchController::class, 'suggest'])->name('search.suggest');
+Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 
 // PENGUNJUNG--------------------------------------------------------------------------
