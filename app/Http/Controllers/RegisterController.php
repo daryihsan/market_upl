@@ -49,6 +49,7 @@ class RegisterController extends Controller
             'rt'         => 'required|string|max:10',
             'rw'         => 'required|string|max:10',
             'kelurahan'  => 'required|string|max:255',
+            'kecamatan'  => 'required|string|max:255',
             'kabupaten'  => 'required|string|max:255',
             'provinsi'   => 'required|string|max:255',
         ]);
@@ -128,6 +129,7 @@ class RegisterController extends Controller
             'rt'         => $finalData['rt'],
             'rw'         => $finalData['rw'],
             'kelurahan'  => $finalData['kelurahan'],
+            'kecamatan'  => $finalData['kecamatan'],
             'kabupaten'  => $finalData['kabupaten'],
             'provinsi'   => $finalData['provinsi'],
             'nik'        => $finalData['nik'],

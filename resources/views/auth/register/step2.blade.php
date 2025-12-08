@@ -98,16 +98,28 @@ tailwind.config = {
     </div>
 </div>
 
-<!-- Kelurahan -->
-<div>
-    <label class="block pb-2 text-sm font-medium">Kelurahan</label>
-    <input type="text" name="kelurahan"
-        class="form-input block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5"
-        placeholder="Masukkan kelurahan"
-        value="{{ old('kelurahan') }}">
-    @error('kelurahan')
-        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-    @enderror
+<!-- Kelurahan + Kecamatan -->
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+    <div>
+        <label class="block pb-2 text-sm font-medium">Kelurahan</label>
+        <input type="text" name="kelurahan"
+            class="form-input block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5"
+            placeholder="Masukkan kelurahan"
+            value="{{ old('kelurahan') }}">
+        @error('kelurahan')
+            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+        @enderror
+    </div>
+    <div>
+        <label class="block pb-2 text-sm font-medium">Kecamatan</label>
+        <input type="text" name="kecamatan"
+            class="form-input block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5"
+            placeholder="Masukkan kecamatan"
+            value="{{ old('kecamatan') }}">
+        @error('kecamatan')
+            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+        @enderror
+    </div>
 </div>
 
 <!-- Provinsi + Kabupaten -->
@@ -140,7 +152,6 @@ tailwind.config = {
             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
         @enderror
     </div>
-
 </div>
 
 <!-- Button -->

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('rt', 10);
             $table->string('rw', 10);
             $table->string('kelurahan');
+            $table->string('kecamatan');
             $table->string('kabupaten');
             $table->string('provinsi');
 
