@@ -1,14 +1,14 @@
 <?php
 // Data yang dikirim dari ReportController
 $activeReportTab = $activeReportTab ?? 'rating';
-$categories = $categories ?? collect([]);
-$reportData = $reportData ?? collect([]);
+$categories      = $categories ?? collect([]);
+$reportData      = $reportData ?? collect([]);
 
-// DATA TOKO DARI USER LOGIN (sama logika dengan dashboard)
-$user = auth()->user();
-$storeName    = $user->nama_toko ?? 'Nama Toko';
+// DATA TOKO DARI USER LOGIN
+$user        = auth()->user();
+$storeName   = $user->nama_toko ?? 'Nama Toko';
 $storeInitial = mb_substr($storeName, 0, 1, 'UTF-8');
-$storeCity    = $user->kabupaten ?? 'Semarang';
+$storeCity   = $user->kabupaten ?? 'Semarang';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -57,7 +57,7 @@ $storeCity    = $user->kabupaten ?? 'Semarang';
     <div class="dashboard-container">
         
         <aside class="sidebar">
-            <div> 
+            <div>
                 <div class="logo-section mb-10">
                     <div class="logo-icon">
                         <?php echo e($storeInitial); ?>
@@ -214,7 +214,7 @@ $storeCity    = $user->kabupaten ?? 'Semarang';
                             <select name="sort" class="p-2 border border-gray-300 rounded-lg">
                                 <option value="stock_desc">Urutan Stok (Default)</option>
                                 <option value="stock_desc" <?php if(request('sort') == 'stock_desc'): ?> selected <?php endif; ?>>Stok Terbanyak</option>
-                                <option value="stock_asc" <?php if(request('sort') == 'stock_asc'): ?> selected <?php endif; ?>>Stok Tersedikit</option>
+                                <option value="stock_asc"  <?php if(request('sort') == 'stock_asc'): ?>  selected <?php endif; ?>>Stok Tersedikit</option>
                             </select>
                             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">Terapkan</button>
                         </form>
@@ -323,12 +323,17 @@ $storeCity    = $user->kabupaten ?? 'Semarang';
     </div>
 
     
+    <form id="delete-form" method="POST" style="display:none;">
+        <?php echo csrf_field(); ?>
+        <?php echo method_field('DELETE'); ?>
+    </form>
+
     <script>
         function editProduct(id) {
             window.location.href = "<?php echo e(route('seller.dashboard', ['tab' => 'addProduct'])); ?>" + `&mode=edit&id=${id}`;
         }
         function deleteProductAction(id) {
-            const routeUrl = "<?php echo e(route('seller.products.destroy', ['product' => '__ID__'])); ?>";
+            const routeUrl     = "<?php echo e(route('seller.products.destroy', ['product' => '__ID__'])); ?>";
             const finalRouteUrl = routeUrl.replace('__ID__', id);
             
             if (confirm('Yakin ingin menghapus produk ini?')) {
