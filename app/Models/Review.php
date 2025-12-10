@@ -13,6 +13,7 @@ class Review extends Model
         'full_name', 
         'email_address', 
         'phone_number', 
+        'provinsi',
         'rating', 
         'review_text'
     ];

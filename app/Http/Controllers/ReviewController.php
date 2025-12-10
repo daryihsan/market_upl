@@ -21,6 +21,7 @@ class ReviewController extends Controller
             'emailAddress' => 'required|email|max:255',
             'productRating' => 'required|integer|min:1|max:5',
             'reviewText' => 'required|string|max:500',
+            'provinsi_pemberi_rating' => 'required|string|max:255',
         ]);
 
         // 2. Simpan Ulasan ke Database
@@ -29,6 +30,7 @@ class ReviewController extends Controller
             'full_name' => $validated['fullName'],
             'email_address' => $validated['emailAddress'],
             'phone_number' => $validated['phoneNumber'],
+            'provinsi' => $validated['provinsi_pemberi_rating'],
             'rating' => $validated['productRating'],
             'review_text' => $validated['reviewText'],
         ]);

@@ -19,7 +19,7 @@ class CatalogController extends Controller
     public function index(Request $request)
     {
         $categoryInput = $request->get('kategori');
-        $location = $request->get('lokasi');
+        $location = (array) $request->get('lokasi');
         $minPrice = $request->get('harga_min', 0);
         $maxPrice = $request->get('harga_max', 50000000);
         $rating = $request->get('rating');
@@ -53,10 +53,10 @@ class CatalogController extends Controller
 
 
         // lokasi
-        if ($location) {
+        if (!empty($location)) {
             $query->whereHas('user', function ($q) use ($location) {
-                $q->where('kabupaten', $location)
-                ->orWhere('kota', $location);
+                $q->whereIn('kabupaten', $location);
+                // ->orWhereIn('kota', $location);
             });
         }
 
@@ -84,10 +84,10 @@ class CatalogController extends Controller
             }
         }
 
-        if ($location) {
+        if (!empty($location)) {
             $totalQuery->whereHas('user', function ($q) use ($location) {
-                $q->where('kabupaten', $location)
-                ->orWhere('kota', $location);
+                $q->whereIn('kabupaten', $location);
+                // ->orWhereIn('kota', $location);
             });
         }
 

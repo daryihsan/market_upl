@@ -29,6 +29,25 @@
                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm 
                                 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
             </div>
+            
+            {{-- Lokasi Propinsi --}}
+            <div class="mb-6">
+                <label for="provinsi_pemberi_rating" class="block text-sm font-medium text-gray-700 mb-1">Lokasi Provinsi</label>
+                <select id="provinsi_pemberi_rating" name="provinsi_pemberi_rating" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm 
+                            focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                    <option value="">Pilih Provinsi Anda</option>
+                    <option value="Aceh">Aceh</option>
+                    <option value="Bali">Bali</option>
+                    <option value="Banten">Banten</option>
+                    <option value="DKI Jakarta">DKI Jakarta</option>
+                    <option value="Jawa Barat">Jawa Barat</option>
+                    <option value="Jawa Tengah">Jawa Tengah</option>
+                    <option value="Jawa Timur">Jawa Timur</option>
+                    <option value="Sumatra Utara">Sumatra Utara</option>
+                    <option value="Lainnya">Lainnya (Provinsi Lain)</option>
+                </select>
+            </div>
 
             <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Bagaimana penilaian Anda terhadap produk ini?</label>

@@ -10,7 +10,8 @@ $activeTab = request()->query('tab', 'overview');
 // Dashboard Data
 $totalProducts = $data['totalProducts'] ?? 0;
 $averageRating = $data['averageRating'] ?? 0;
-$productCountsByCategory = []; 
+$topRatedProducts = $data['topRatedProducts'] ?? collect([]); // <-- TAMBAH BARIS INI
+$productCountsByCategory = [];
 
 // Ambil semua produk milik user yang sedang login, beserta kategorinya
 $sellerProducts = \App\Models\Product::where('user_id', $user->id)
@@ -39,10 +40,10 @@ foreach ($productCountsByCategory as $name => $stock) {
 $salesByCategory = $stockByCategoryForChart;
 
 $locationData = $data['locationData'] ?? [
-    'TotalOrders' => 0,
-    0 => ['Lokasi' => 'N/A', 'Persentase' => 0],
-    1 => ['Lokasi' => 'N/A', 'Persentase' => 0],
-    2 => ['Lokasi' => 'N/A', 'Persentase' => 0],
+    'TotalOrders' => 0, // Default TotalOrders
+    (object)['Lokasi' => 'N/A', 'Persentase' => 0], // Default data chart
+    (object)['Lokasi' => 'N/A', 'Persentase' => 0],
+    (object)['Lokasi' => 'N/A', 'Persentase' => 0],
 ];
 
 $latestProducts = $data['latestProducts'] ?? collect([]);
@@ -66,6 +67,7 @@ $editProduct = $data['editProduct'] ?? null;
 $summaryData = [
     (object)['title' => 'Total Produk',      'value' => number_format($totalProducts),    'class' => 'text-blue-600'],
     (object)['title' => 'Rating Rata-Rata',  'value' => number_format($averageRating, 1), 'class' => 'text-red-500'],    
+    (object)['title' => 'Total Kategori',  'value' => number_format($allCategories->count()?? 0), 'class' => 'text-gray-600'],    
 ];
 @endphp
 <!DOCTYPE html>
@@ -144,6 +146,9 @@ $summaryData = [
         .logo-section { display: flex; align-items: center; padding-bottom: 30px; border-bottom: 1px solid var(--border-color); }
         .logo-icon { width: 30px; height: 30px; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: bold;
         margin-right: 10px; }
+        /* Custom Rating Style */
+        .star-rating i { color: #ffc107; font-size: 0.85em; }
+
     </style>
 </head>
 <body>
@@ -248,11 +253,69 @@ $summaryData = [
 
             {{-- 1. OVERVIEW SECTION --}}
             <section id="overview-content" @if($activeTab !== 'overview') style="display: none;" @endif>
-                <div class="grid grid-cols-2 gap-6 mb-8 w-1/2"> 
+                {{-- START: Status Toko dan Tombol Nonaktifkan (Poin 5) --}}
+                <div class="card mb-6 p-5">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Status Toko Anda</h2>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-medium">
+                            {{-- Poin 1 UI: Hanya menampilkan status akun tanpa duplikasi label --}}
+                            <span class="@if($user->status_akun === 'active') text-green-600 @else text-red-600 @endif font-bold uppercase">{{ $user->status_akun ?? 'pending' }}</span>
+                        </span>
+                        
+                        
+                        {{-- FORM INI YANG HARUS MENGGUNAKAN PATCH DAN MENGIRIM STATUS --}}
+                        <form action="{{ route('seller.toggle_status') }}" method="POST">
+                            @csrf
+                            @method('PATCH')
+                            
+                            @if ($user->status_akun === 'active')
+                                {{-- KONDISI 1: TOKO AKTIF -> Tampilkan tombol Nonaktifkan --}}
+                                <button type="submit" name="status" value="rejected"
+                                        class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150">
+                                    Nonaktifkan Toko
+                                </button>
+                            
+                            @elseif ($user->status_akun === 'rejected')
+                                {{-- KONDISI 2: TOKO DINONAKTIFKAN -> Tampilkan tombol Aktifkan Kembali --}}
+                                <button type="submit" name="status" value="active"
+                                        class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150">
+                                    Aktifkan Kembali
+                                </button>
+                            
+                            @else
+                                {{-- KONDISI 3: STATUS PENDING/LAINNYA -> Disabled --}}
+                                <button type="button" disabled
+                                        class="bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg cursor-not-allowed">
+                                    {{ $user->status_akun === 'pending' ? 'Menunggu Verifikasi' : 'Status: ' . $user->status_akun }}
+                                </button>
+                            @endif
+                        </form>
+                    </div>
+                </div>
+                {{-- END: Status Toko dan Tombol Nonaktifkan (Poin 5) --}}
+                <div class="grid grid-cols-3 gap-6 mb-8"> 
                     @foreach ($summaryData as $item)
                         <div class="card summary-card border border-gray-200 p-5"> 
                             <span class="card-title text-sm uppercase">{{ $item->title }}</span>
-                            <strong class="card-value text-4xl mt-1 {{ $item->class }}">{{ $item->value }}</strong>
+                            
+                            {{-- LOGIKA BARU UNTUK RATING RATA-RATA --}}
+                            @if ($item->title === 'Rating Rata-Rata')
+                                <div class="flex items-end space-x-2 mt-1">
+                                    <div class="star-rating text-3xl">
+                                        @php $rating = round($averageRating ?? 0); @endphp
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <i class="fa-{{ $i <= $rating ? 'solid' : 'regular' }} fa-star"></i>
+                                        @endfor
+                                    </div>
+                                    <strong class="card-value text-4xl {{ $item->class }} leading-none">
+                                        {{ $item->value }}
+                                    </strong>
+                                </div>
+                            @else
+                                <strong class="card-value text-4xl mt-1 {{ $item->class }}">
+                                    {{ $item->value }}
+                                </strong>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -270,19 +333,22 @@ $summaryData = [
                             <div class="relative w-36 h-36 flex-shrink-0">
                                 <canvas id="locationDoughnutChart"></canvas>
                                 <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    {{-- Ini adalah baris yang menampilkan Total Orders --}}
                                     <span class="text-2xl font-bold text-gray-800">{{ $locationData['TotalOrders'] ?? 0 }}</span>
                                     <span class="text-xs text-gray-500">Rating</span>
                                 </div>
                             </div>
-                            <ul class="legend text-sm space-y-2 ml-4">
+                            {{-- Legend Dinamis di Samping Chart --}}
+                            <ul class="legend text-sm space-y-2">
                                 @php
-                                    $chartColors = ['#dc3545', '#007bff', '#ccc'];
+                                    $chartColors = ['#dc3545', '#007bff', '#ccc', '#F59E0B'];
+                                    $distributionItems = array_slice($locationData, 1);
                                 @endphp
-                                @foreach ($locationData as $key => $item)
-                                    @if (is_numeric($key) && isset($item['Lokasi']))
+                                @foreach ($distributionItems as $key => $item)
+                                    @if (isset($item->Persentase) && $item->Persentase > 0)
                                         <li>
-                                            <span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: {{ $chartColors[$key] }}"></span>
-                                            {{ $item['Lokasi'] }} ({{ $item['Persentase'] }}%)
+                                            <span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: {{ $chartColors[$key] ?? '#000000' }}"></span>
+                                            {{ $item->Lokasi }} ({{ $item->Persentase }}%)
                                         </li>
                                     @endif
                                 @endforeach
@@ -291,6 +357,7 @@ $summaryData = [
                     </div>
                 </div>
 
+                {{-- DAFTAR PRODUK TERBARU - DIBAWAH SEMUA GRAFIK (Lebar Penuh) --}}
                 <div class="recent-products-section">
                     <h2 class="text-xl font-semibold mb-4 text-gray-800">Daftar Produk Terbaru</h2>
                     <div class="table-responsive card p-0 overflow-hidden">
@@ -312,7 +379,16 @@ $summaryData = [
                                                 <img src="{{ $product->image_path ?? 'https://via.placeholder.com/40x40?text=P' }}"
                                                     onerror="this.onerror=null;this.src='https://via.placeholder.com/40';"
                                                     alt="{{ $product->name }}" class="w-24 h-24 object-cover rounded-md mr-3 bg-gray-200">
-                                                <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
+                                                <div>
+                                                    <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
+                                                    {{-- Visualisasi Rating Bintang --}}
+                                                    <div class="star-rating mt-1">
+                                                        @php $rating = round($product->rating ?? 0); @endphp
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <i class="fa-{{ $i <= $rating ? 'solid' : 'regular' }} fa-star"></i>
+                                                        @endfor
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -344,6 +420,8 @@ $summaryData = [
                     </div>
                 </div>
             </section>
+
+            
 
             {{-- 2. PRODUCTS SECTION --}}
             <section id="products-content" @if($activeTab !== 'products') style="display: none;" @endif>
@@ -382,8 +460,8 @@ $summaryData = [
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <img src="{{ $product->image_path ?? 'https://via.placeholder.com/40x40?text=P' }}"
-                                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/40';"
-                                                    alt="{{ $product->name }}" class="w-24 h-24 object-cover rounded-md mr-3 bg-gray-200">
+                                                     onerror="this.onerror=null;this.src='https://via.placeholder.com/40';"
+                                                     alt="{{ $product->name }}" class="w-24 h-24 object-cover rounded-md mr-3 bg-gray-200">
                                                 <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
                                             </div>
                                         </td>
@@ -407,11 +485,11 @@ $summaryData = [
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <button onclick="editProduct({{ $product->id }})"
-                                                class="text-blue-600 hover:text-blue-800 transition mr-2 p-1">
+                                                    class="text-blue-600 hover:text-blue-800 transition mr-2 p-1">
                                                 <i class="fas fa-pencil-alt"></i>
                                             </button>
                                             <button onclick="deleteProductAction({{ $product->id }})"
-                                                class="text-red-600 hover:text-red-800 transition p-1">
+                                                    class="text-red-600 hover:text-red-800 transition p-1">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </td>
@@ -490,7 +568,7 @@ $summaryData = [
                                         <label for="product-condition" class="block text-sm font-medium text-gray-700 mb-1">Kondisi</label>
                                         <select id="product-condition" name="condition" class="form-input focus:ring-blue-500 focus:border-blue-500">
                                             <option value="" @if(old('condition', $editMode ? $editProduct->condition : '') === '') selected @endif>Pilih kondisi barang</option>
-                                            <option value="baru"  @if(old('condition', $editMode ? $editProduct->condition : '') === 'baru')  selected @endif>Baru</option>
+                                            <option value="baru"  @if(old('condition', $editMode ? $editProduct->condition : '') === 'baru')  selected @endif>Baru</option>
                                             <option value="bekas" @if(old('condition', $editMode ? $editProduct->condition : '') === 'bekas') selected @endif>Bekas</option>
                                         </select>
                                     </div>
@@ -538,8 +616,8 @@ $summaryData = [
                             <div class="flex justify-between items-center mb-4 border-b pb-3 border-gray-200">
                                 <h2 class="text-xl font-semibold">Varian Produk</h2>
                                 <button type="button"
-                                        id="add-variant-btn"
-                                        class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-600 transition">
+                                            id="add-variant-btn"
+                                            class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-600 transition">
                                     <i class="fas fa-plus mr-1"></i> Tambah Varian
                                 </button>
                             </div>
@@ -577,6 +655,7 @@ $summaryData = [
         document.addEventListener('DOMContentLoaded', function() {
             renderSalesBarChart();
             renderLocationDoughnutChart();
+            renderProductRatingChart(); // Poin 8
             handleFormInteractions();
         });
 
@@ -585,7 +664,7 @@ $summaryData = [
             // 1. Upload / Preview Foto Produk
             // =====================================================
             const uploadArea = document.querySelector('.photo-upload-area');
-            const fileInput  = document.getElementById('foto_produk_input'); 
+            const fileInput  = document.getElementById('foto_produk_input'); 
 
             if (uploadArea && fileInput) {
                 const statusElement = uploadArea.querySelector('.upload-text');
@@ -606,11 +685,11 @@ $summaryData = [
             // =====================================================
             // 2. Varian Produk (Tambah/Hapus + Validasi Stok)
             // =====================================================
-            const addVariantBtn         = document.getElementById('add-variant-btn');
-            const variantList           = document.getElementById('variant-list');
-            const noVariantPlaceholder  = document.getElementById('no-variant-placeholder');
-            const stockInput            = document.getElementById('product-stock-input');
-            const form                  = document.getElementById('add-product-form');
+            const addVariantBtn         = document.getElementById('add-variant-btn');
+            const variantList           = document.getElementById('variant-list');
+            const noVariantPlaceholder  = document.getElementById('no-variant-placeholder');
+            const stockInput            = document.getElementById('product-stock-input');
+            const form                  = document.getElementById('add-product-form');
 
             let variantIndex = 0;
 
@@ -630,24 +709,24 @@ $summaryData = [
                                 Nama Varian
                             </label>
                             <input type="text"
-                                   name="variants[${variantIndex}][name]"
-                                   class="form-input focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Contoh: Ukuran S"
-                                   required>
+                                       name="variants[${variantIndex}][name]"
+                                       class="form-input focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Contoh: Ukuran S"
+                                       required>
                         </div>
                         <div class="w-40">
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 Stok Varian
                             </label>
                             <input type="number"
-                                   name="variants[${variantIndex}][stock]"
-                                   class="form-input focus:ring-blue-500 focus:border-blue-500 variant-stock-input"
-                                   min="0"
-                                   value="0"
-                                   required>
+                                       name="variants[${variantIndex}][stock]"
+                                       class="form-input focus:ring-blue-500 focus:border-blue-500 variant-stock-input"
+                                       min="0"
+                                       value="0"
+                                       required>
                         </div>
                         <button type="button"
-                                class="text-red-600 text-sm font-medium hover:text-red-800 remove-variant-btn mb-2">
+                                 class="text-red-600 text-sm font-medium hover:text-red-800 remove-variant-btn mb-2">
                             Hapus
                         </button>
                     `;
@@ -700,7 +779,7 @@ $summaryData = [
         }
 
         function deleteProductAction(id) {
-            const routeUrl     = "{{ route('seller.products.destroy', ['product' => '__ID__']) }}";
+            const routeUrl     = "{{ route('seller.products.destroy', ['product' => '__ID__']) }}";
             const finalRouteUrl = routeUrl.replace('__ID__', id);
             
             if (confirm('Yakin ingin menghapus produk ini? Tindakan ini tidak dapat dibatalkan.')) {
@@ -711,7 +790,7 @@ $summaryData = [
         }
 
         function filterProducts(searchTerm) {
-            const rows   = document.getElementById('productTableBody').getElementsByTagName('tr');
+            const rows   = document.getElementById('productTableBody').getElementsByTagName('tr');
             const search = searchTerm.toLowerCase();
             for (let i = 0; i < rows.length; i++) {
                 const productCell = rows[i].getElementsByTagName('td')[0];
@@ -723,7 +802,7 @@ $summaryData = [
         }
 
         // =========================================================
-        // LOGIKA CHART
+        // LOGIKA CHART (Poin 8 & Poin 4)
         // =========================================================
 
         function renderSalesBarChart() {
@@ -757,20 +836,23 @@ $summaryData = [
 
         function renderLocationDoughnutChart() {
             const data = @json($locationData);
-            const distributions = [
-                { wilayah: data[0].Lokasi, persentase: data[0].Persentase, warna: '#dc3545' },
-                { wilayah: data[1].Lokasi, persentase: data[1].Persentase, warna: '#007bff' },
-                { wilayah: data[2].Lokasi, persentase: data[2].Persentase, warna: '#ccc' }
-            ];
+            
+            // Ambil HANYA data distribusi (indeks 1 ke atas)
+            const distributionItems = Object.values(data).slice(1);
+            const validDistributions = distributionItems.filter(item => item.Persentase > 0);
+
+            const chartColors = ['#dc3545', '#007bff', '#ccc', '#F59E0B'];
+
             const ctx = document.getElementById('locationDoughnutChart');
             if (!ctx) return;
+            
             new Chart(ctx.getContext('2d'), {
                 type: 'doughnut',
                 data: {
-                    labels: distributions.map(item => item.wilayah),
+                    labels: validDistributions.map(item => item.Lokasi),
                     datasets: [{
-                        data: distributions.map(item => item.persentase),
-                        backgroundColor: distributions.map(item => item.warna),
+                        data: validDistributions.map(item => item.Persentase),
+                        backgroundColor: validDistributions.map((_, index) => chartColors[index]),
                         borderWidth: 0,
                     }]
                 },
@@ -787,6 +869,50 @@ $summaryData = [
                                 return `${label}: ${value}%`;
                             }
                         } }
+                    }
+                }
+            });
+        }
+        
+        function renderProductRatingChart() {
+            const products = @json($topRatedProducts); 
+            const validProducts = products.filter(p => (p.rating !== null && p.rating > 0)).slice(0, 5);
+
+            const ctx = document.getElementById('productRatingChart');
+            if (!ctx) return;
+
+            if (validProducts.length === 0) {
+                ctx.parentElement.innerHTML = '<p class="text-center text-gray-500 pt-20">Belum ada produk yang memiliki rating.</p>';
+                return;
+            }
+            
+            const labels = validProducts.map(p => p.name.length > 20 ? p.name.substring(0, 20) + '...' : p.name);
+            const ratings = validProducts.map(p => p.rating);
+
+            new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Rating Rata-Rata',
+                        data: ratings,
+                        backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }],
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false }
+                    },
+                    scales: {
+                        x: { min: 0, max: 5, ticks: { stepSize: 1 }, title: { display: true, text: 'Rating (Skala 5.0)' } },
+                        y: { beginAtZero: true }
                     }
                 }
             });

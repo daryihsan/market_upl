@@ -227,19 +227,6 @@
                         Stok: {{ $product->stock ?? 0 }}
                     </div>
 
-                    {{-- JUMLAH (DUMMY FUNCTIONALITY) --}}
-                    <div class="mb-6">
-                        <label class="text-sm font-semibold mb-2 block">Jumlah:</label>
-                        <div class="inline-flex items-center border rounded-lg overflow-hidden">
-                            <button id="decreaseBtn" class="px-4 py-2 text-lg hover:bg-gray-100">-</button>
-                            <input id="quantityInput"
-                                   type="text"
-                                   value="1"
-                                   class="px-4 py-2 w-16 text-center text-sm border-x focus:outline-none">
-                            <button id="increaseBtn" class="px-4 py-2 text-lg hover:bg-gray-100">+</button>
-                        </div>
-                    </div>
-
                     {{-- INFO TOKO DINAMIS --}}
                     <div class="border rounded-xl p-4 mb-4 flex items-start justify-between hover:shadow-md transition-all">
                         <div class="flex items-start space-x-3">
@@ -260,9 +247,10 @@
                                 </p>
                             </div>
                         </div>
-                        <button class="hidden sm:inline-flex bg-blue-900 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-blue-800">
-                            <i class="far fa-comment mr-2"></i>Chat Penjual
-                        </button>
+                        <div>
+                            <a href="{{ route('katalog', ['penjual' => $seller->id]) }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
+                                Kunjungi Toko
+                            </a>
                     </div>
                 </div>
 

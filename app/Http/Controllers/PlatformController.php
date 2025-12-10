@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Product;
+use App\Models\Review;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -18,15 +20,47 @@ class PlatformController extends Controller
     // =======================
     public function dashboard()
     {
+        // 1. Jumlah Penjual (Aktif/Tidak Aktif/Pending) (SRS-MartPlace-07)
         $pending_count     = User::where('status_akun', 'pending')->count();
         $aktif_count       = User::where('status_akun', 'active')->count();
-        $tidak_aktif_count = User::where('status_akun', 'rejected')->count();
+        $rejected_count    = User::where('status_akun', 'rejected')->count();
+        $total_penjual     = $pending_count + $aktif_count + $rejected_count;
+
+        // 2. Sebaran Jumlah Produk Berdasarkan Kategori (SRS-MartPlace-07)
+        $productsByCategory = Product::with('category')
+            ->select('category_id', DB::raw('count(*) as total_products'))
+            ->groupBy('category_id')
+            ->get();
+        
+        $categoryLabels = $productsByCategory->pluck('category.name')->toArray();
+        $productCounts = $productsByCategory->pluck('total_products')->toArray();
+        
+        // 3. Sebaran Jumlah Toko Berdasarkan Lokasi Provinsi (SRS-MartPlace-07)
+        $sellersByProvince = User::whereNotNull('nama_toko') 
+            ->select('provinsi', DB::raw('count(*) as total_sellers'))
+            ->groupBy('provinsi')
+            ->get();
+            
+        $provinceLabels = $sellersByProvince->pluck('provinsi')->toArray();
+        $sellerCounts = $sellersByProvince->pluck('total_sellers')->toArray();
+
+        // 4. Jumlah Pengunjung Memberi Komentar dan Rating (SRS-MartPlace-07)
+        $totalReviews = Review::count(); 
 
         return view('platform.dashboard', [
             'pending_verifications_count' => $pending_count,
             'total_penjual_aktif'         => $aktif_count,
-            'total_penjual_tidak_aktif'   => $tidak_aktif_count,
-            'total_pengunjung_rating'     => 5123,
+            'total_penjual_tidak_aktif'   => $rejected_count,
+            'total_pengunjung_rating'     => $totalReviews, 
+            'totalPenjual'                => $total_penjual, 
+            
+            // Data Chart Produk per Kategori
+            'productCategoryLabels'       => $categoryLabels,
+            'productCategoryCounts'       => $productCounts,
+            
+            // Data Chart Toko per Provinsi
+            'provinceLabels'              => $provinceLabels,
+            'provinceCounts'              => $sellerCounts,
         ]);
     }
 

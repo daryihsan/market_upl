@@ -80,6 +80,7 @@ Route::prefix('seller')->name('seller.')->group(function () {
     Route::put('/products/{product}', [SellerController::class, 'updateProduct'])->name('products.update');
     Route::delete('/products/{product}', [SellerController::class, 'deleteProduct'])->name('products.destroy');
 
+    
     // laporan
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/download', [ReportController::class, 'downloadPdf'])->name('reports.download');
@@ -96,6 +97,8 @@ Route::prefix('seller')->name('seller.')->group(function () {
 // middleware auth login penjual (harus login baru bisa akses dashboard)
 Route::middleware('auth')->prefix('seller')->name('seller.')->group(function () {
     // Route::get('/dashboard', [SellerController::class, 'dashboard'])->name('dashboard');
+    // **ROUTE KRUSIAL: TOGGLE STATUS TOKO (FIXED)**
+    Route::patch('/toggle-status', [SellerController::class, 'toggleStatus'])->name('toggle_status');
 });
 
 // logout
