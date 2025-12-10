@@ -178,3 +178,41 @@ Route::get('/kategori/{slug}', [CategoryController::class, 'showProducts'])
 
 // Route::get('/verify-otp', [AuthController::class, 'showVerifyOtp'])->name('verify.otp');
 // Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Route::get('/local-file', function (\Illuminate\Http\Request $request) {
+    $path = $request->query('path');
+
+    $fullPath = storage_path('app/private/public/' . $path);
+
+    if (!file_exists($fullPath)) {
+        abort(404, "File not found: $fullPath");
+    }
+
+    return response()->file($fullPath);
+})->name('local.file');

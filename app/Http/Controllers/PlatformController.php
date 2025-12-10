@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Product;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Category;
+use App\Models\Review;
 
 use App\Mail\SellerVerificationMail;
 use App\Mail\SellerRejectionMail;
@@ -16,19 +19,91 @@ class PlatformController extends Controller
     // =======================
     // 1. DASHBOARD UTAMA
     // =======================
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $pending_count     = User::where('status_akun', 'pending')->count();
-        $aktif_count       = User::where('status_akun', 'active')->count();
-        $tidak_aktif_count = User::where('status_akun', 'rejected')->count();
+        // UI params
+        $topCategories = $request->query('top_categories', '10');
+        $reviewPeriod = (int) $request->query('review_period', 7);
+
+        // Seller counts (only active & rejected)
+        $total_penjual_aktif = User::whereNotNull('nama_toko')
+            ->where('status_akun', 'active')
+            ->count();
+
+        $total_penjual_tidak_aktif = User::whereNotNull('nama_toko')
+            ->where('status_akun', 'rejected')
+            ->count();
+
+        // Categories with counts (left join so categories with zero products included)
+        $categoriesQuery = DB::table('categories')
+            ->leftJoin('products', 'categories.id', '=', 'products.category_id')
+            ->select('categories.id', 'categories.name', DB::raw('COUNT(products.id) as products_count'))
+            ->groupBy('categories.id', 'categories.name')
+            ->orderByDesc('products_count');
+
+        $categoriesAll = $categoriesQuery->get();
+
+        if ($topCategories !== 'all') {
+            $topN = max(1, (int)$topCategories);
+            $categoriesForChart = $categoriesAll->take($topN);
+        } else {
+            $categoriesForChart = $categoriesAll;
+        }
+
+        $category_labels = $categoriesForChart->pluck('name')->map(fn($v) => (string)$v)->toArray();
+        $category_counts = $categoriesForChart->pluck('products_count')->map(fn($v) => (int)$v)->toArray();
+
+        // Provinsi distribution (count sellers per provinsi)
+        $provinsiDistribution = User::whereNotNull('nama_toko')
+            ->select('provinsi', DB::raw('COUNT(*) as total'))
+            ->groupBy('provinsi')
+            ->orderByDesc('total')
+            ->get();
+
+        $provinsi_labels = $provinsiDistribution->pluck('provinsi')->map(fn($v) => $v ?: 'Tidak Diketahui')->toArray();
+        $provinsi_counts = $provinsiDistribution->pluck('total')->map(fn($v) => (int)$v)->toArray();
+
+        // Reviews (interaction) grouped by date within period
+        $end = now()->endOfDay();
+        $start = now()->subDays(max(1, $reviewPeriod - 1))->startOfDay();
+
+        $reviewsByDate = Review::whereBetween('created_at', [$start, $end])
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as total'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // build full date range
+        $period = [];
+        $cursor = $start->copy();
+        while ($cursor->lte($end)) {
+            $period[] = $cursor->format('Y-m-d');
+            $cursor->addDay();
+        }
+
+        $reviewsMap = $reviewsByDate->pluck('total', 'date')->toArray();
+        $reviews_labels = array_map(fn($d) => date('d M', strtotime($d)), $period);
+        $reviews_counts = array_map(fn($d) => isset($reviewsMap[$d]) ? (int)$reviewsMap[$d] : 0, $period);
+
+        $total_pengunjung_rating_period = array_sum($reviews_counts);
 
         return view('platform.dashboard', [
-            'pending_verifications_count' => $pending_count,
-            'total_penjual_aktif'         => $aktif_count,
-            'total_penjual_tidak_aktif'   => $tidak_aktif_count,
-            'total_pengunjung_rating'     => 5123,
+            'total_penjual_aktif' => $total_penjual_aktif,
+            'total_penjual_tidak_aktif' => $total_penjual_tidak_aktif,
+            'category_labels' => $category_labels,
+            'category_counts' => $category_counts,
+            'categories_all' => $categoriesAll,
+            'provinsi_labels' => $provinsi_labels,
+            'provinsi_counts' => $provinsi_counts,
+            'reviews_labels' => $reviews_labels,
+            'reviews_counts' => $reviews_counts,
+            'review_period_days' => $reviewPeriod,
+            'total_pengunjung_rating_period' => $total_pengunjung_rating_period,
+            'selected_top_categories' => $topCategories,
+            'selected_review_period' => $reviewPeriod,
         ]);
     }
+
 
     // =======================
     // 2. LIST VERIFIKASI
