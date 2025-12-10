@@ -10,6 +10,7 @@ class CatalogController extends Controller
 {
     public function home()
     {
+        // mengambil 5 produk dengan total ulasan terbanyak dan relasi user
         $trendingProducts = Product::with('user')->orderByDesc('total_ulasan')->take(5)->get();
         $categories = Category::all();
         return view('home', compact('trendingProducts', 'categories'));
@@ -51,6 +52,13 @@ class CatalogController extends Controller
         }
 
         // lokasi
+        if ($location) {
+            $query->whereHas('user', function ($q) use ($location) {
+                $q->where('kabupaten', $location)
+                ->orWhere('kota', $location);
+            });
+        }
+        
         $category  = $request->get('kategori');
         $location  = $request->get('lokasi');
         $minPrice  = $request->get('harga_min', 0);
@@ -116,6 +124,7 @@ class CatalogController extends Controller
 
         // kategori untuk sidebar
         $categories = Category::orderBy('name')->get();
+        
         // filter harga
         $query->whereBetween('price', [$minPrice, $maxPrice]);
 
@@ -124,14 +133,24 @@ class CatalogController extends Controller
             $query->where('rating', '>=', $rating);
         }
         
+        // // ambil produk dengan pagination
+        // $products = $query->paginate(12)->withQueryString();
+
+        // // total produk sesuai filter
+        // $totalQuery = Product::query();
+        
         $products = $query->paginate(12);
         
         $totalProductsQuery = Product::query();
 
-        if ($category) {
-            $totalProductsQuery->whereHas('category', function ($q) use ($category) {
-                $q->where('name', $category);
-            });
+        if ($categoryInput) {
+            if (is_numeric($categoryInput)) {
+                $totalQuery->where('category_id', (int) $categoryInput);
+            } else {
+                if ($categoryModel) {
+                    $totalQuery->where('category_id', $categoryModel->id);
+                }
+            }
         }
 
         if ($location) {
@@ -140,12 +159,23 @@ class CatalogController extends Controller
 
         $totalProductsQuery->whereBetween('price', [$minPrice, $maxPrice]);
 
+        // if ($location) {
+        //     $totalQuery->whereHas('user', function ($q) use ($location) {
+        //         $q->where('kabupaten', $location)
+        //         ->orWhere('kota', $location);
+        //     });
+        // }
+        // $totalQuery->whereBetween('price', [(float)$minPrice, (float)$maxPrice]);
+       
         if ($rating) {
             $totalProductsQuery->where('rating', '>=', $rating);
         }
 
         $totalProducts = $totalProductsQuery->count();
-        
+
+        // kategori untuk sidebar
+        $categories = Category::orderBy('name')->get();
+
         return view('katalog', [
             'products' => $products,
             'totalProducts' => $totalProducts,

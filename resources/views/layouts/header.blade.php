@@ -9,16 +9,37 @@
                 </a>
             </div>
 
-            <div class="hidden lg:flex items-center space-x-6 text-gray-700">
-                <a href="#" class="hover:text-blue-600 flex items-center">
-                    Kategori
-                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M19 9l-7 7-7-7"></path>
-                    </svg>
+                <!-- dropdown kategori  -->
+				<div class="relative group">
+					<button 
+						class="flex items-center rounded-3xl px-4 py-2 text-sm text-gray-900">
+						Kategori
+						<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 20 12">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M10 10 2 2m8 8 8-8" />
+						</svg>
+					</button>
+					<!-- menu -->
+					<div 
+						class="absolute left-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg 
+							py-2 text-sm text-gray-700 
+							opacity-0 invisible group-hover:opacity-100 group-hover:visible
+							transition-all duration-200">
+						@foreach($headerCategories as $cat)
+							<a href="{{ route('catalog.byCategory', $cat->slug) }}"
+							class="block px-4 py-2 hover:bg-gray-100">
+								{{ $cat->name }}
+							</a>
+						@endforeach
+					</div>
+				</div>
+
+                <!-- produk -->
+                <a href="{{ route('katalog') }}" class="hover:text-blue-600">
+                    Produk
                 </a>
-                <a href="#" class="hover:text-blue-600">Produk</a>
             </div>
+
         </div>
 
         <!-- TENGAH: Search Bar -->
