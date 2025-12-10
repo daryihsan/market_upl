@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('email_address');
             $table->string('phone_number');
-            
+            $table->string('province');
+
             // Data ulasan (SRS-MartPlace-06)
             $table->unsignedTinyInteger('rating'); // Skala 1 sampai 5
             $table->text('review_text');

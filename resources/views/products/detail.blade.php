@@ -80,7 +80,7 @@
 
                     {{-- THUMBNAILS (MENGGUNAKAN GAMBAR UTAMA SEBAGAI REPLIKA) --}}
                     <div class="grid grid-cols-5 gap-2 mb-6">
-                        @for ($i = 0; $i < 5; $i++)
+                        @for ($i = 0; $i < 1; $i++) {{-- Hanya 1 gambar utama --}}
                             <img src="{{ $mainImageUrl ?? $fallbackUrl }}"
                                  class="w-full h-20 object-cover rounded-xl border cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
                                  onclick="changeMainImage('{{ $mainImageUrl ?? $fallbackUrl }}')"

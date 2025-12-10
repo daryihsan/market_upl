@@ -171,6 +171,14 @@ Route::get('/seller/reports/download', [ReportController::class, 'downloadPdf'])
 Route::get('/kategori/{slug}', [CategoryController::class, 'showProducts'])
     ->name('catalog.byCategory');
 
+// footer
+Route::get('/about-us', function () {
+    return view('layouts.aboutus');
+})->name('aboutus');
+
+Route::get('/customer-service', function () {
+    return view('layouts.service');
+})->name('customerservice');
 // DRAFT!!!!!
 // Route::get('/home', function () {
 //     return view('home');
