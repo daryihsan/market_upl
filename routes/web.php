@@ -130,23 +130,22 @@ Route::prefix('platform')->name('platform.')->group(function () {
     // LAPORAN
     // ==============================
 
-    // TAB 1 – "Daftar Penjual"
-    Route::get('/laporan', [PlatformController::class, 'sellerReportIndex'])
-        ->name('laporan');
+    // Rute utama laporan sekarang menangani semua tab: Daftar Penjual, Penjual per Provinsi, Produk Lengkap
+    Route::get('/laporan', [PlatformController::class,
+'reportIndex'])->name('laporan');
 
-    // TAB 2 – "Penjual per Provinsi"
-    Route::get('/laporan/provinsi', function () {
+    // HAPUS rute lama untuk tab, hanya menyisakan download
+    /* Route::get('/laporan/provinsi', function () {
         return view('platform.provinsi');
     })->name('laporan.provinsi');
 
-    // TAB 3 – "Produk Lengkap"
     Route::get('/laporan/produk', function () {
         return view('platform.produk');
-    })->name('laporan.produk');
+    })->name('laporan.produk'); */
 
     // DOWNLOAD PDF – 3 jenis: status, provinsi, produk
-    Route::get('/laporan/download', [PlatformController::class, 'downloadPlatformReport'])
-        ->name('laporan.download');
+    Route::get('/laporan/download', [PlatformController::class,
+'downloadPlatformReport'])->name('laporan.download');
 
     // ==============================
     // MANAJEMEN KATEGORI (CRUD)
