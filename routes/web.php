@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ReviewController; 
 use App\Models\Category;
+use App\Http\Controllers\SearchController;
+
+// Pencarian Produk
+Route::get('/search', [SearchController::class, 'search'])->name('search');
+// Pencarian Produk (dropdown suggestion, AJAX)
+Route::get('/search/suggest', [SearchController::class, 'suggest'])->name('search.suggest');
+Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 
 // PENGUNJUNG--------------------------------------------------------------------------
@@ -51,6 +58,9 @@ Route::prefix('register')->name('register.')->group(function () {
     // pendaftaran berhasil
     Route::get('/success', [RegisterController::class, 'showSuccess'])->name('success');
 });
+
+// Route untuk mengambil data Kabupaten/Kota berdasarkan Provinsi
+Route::get('/get-kabupaten/{provinsi}', [RegisterController::class, 'getKabupaten'])->name('ajax.get.kabupaten');
 
 // verif email
 Route::get('/email/verify/{token}/{email}', [VerificationController::class, 'verify'])
@@ -107,7 +117,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // ADMIN --------------------------------------------------------------------------
 // platform
 Route::prefix('platform')->name('platform.')->group(function () {
-
+// Route::middleware(['auth'])->prefix('platform')->name('platform.')->group(function () {
+  
     // DASHBOARD ADMIN
     Route::get('/dashboard', [PlatformController::class, 'dashboard'])
         ->name('dashboard');
@@ -167,6 +178,14 @@ Route::get('/seller/reports/download', [ReportController::class, 'downloadPdf'])
 Route::get('/kategori/{slug}', [CategoryController::class, 'showProducts'])
     ->name('catalog.byCategory');
 
+// footer
+Route::get('/about-us', function () {
+    return view('layouts.aboutus');
+})->name('aboutus');
+
+Route::get('/customer-service', function () {
+    return view('layouts.service');
+})->name('customerservice');
 // DRAFT!!!!!
 // Route::get('/home', function () {
 //     return view('home');

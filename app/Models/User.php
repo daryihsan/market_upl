@@ -21,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'rt',
         'rw',
         'kelurahan',
+        'kecamatan',
         'kabupaten',
         'provinsi',
         'nik',

@@ -49,6 +49,7 @@ class RegisterController extends Controller
             'rt'         => 'required|string|max:10',
             'rw'         => 'required|string|max:10',
             'kelurahan'  => 'required|string|max:255',
+            'kecamatan'  => 'required|string|max:255',
             'kabupaten'  => 'required|string|max:255',
             'provinsi'   => 'required|string|max:255',
         ]);
@@ -128,6 +129,7 @@ class RegisterController extends Controller
             'rt'         => $finalData['rt'],
             'rw'         => $finalData['rw'],
             'kelurahan'  => $finalData['kelurahan'],
+            'kecamatan'  => $finalData['kecamatan'],
             'kabupaten'  => $finalData['kabupaten'],
             'provinsi'   => $finalData['provinsi'],
             'nik'        => $finalData['nik'],
@@ -148,5 +150,52 @@ class RegisterController extends Controller
     public function showSuccess()
     {
         return view('auth.register.success');
+    }
+
+    // File: app/Http/Controllers/RegisterController.php
+
+    public function getKabupaten($provinsi)
+    {
+        $data = [
+            'DKI Jakarta' => [
+                ['id' => 1, 'nama' => 'Jakarta Pusat'],
+                ['id' => 2, 'nama' => 'Jakarta Barat'],
+                // ... dst
+            ],
+            'Jawa Barat' => [
+                ['id' => 3, 'nama' => 'Bandung'],
+                ['id' => 4, 'nama' => 'Bekasi'],
+                // ... dst
+            ],
+            'Jawa Tengah' => [
+                ['id' => 5, 'nama' => 'Semarang'],
+                ['id' => 6, 'nama' => 'Surakarta'],
+
+                // ... dst
+            ],
+            'Sumatra Selatan' => [
+                ['id' => 7, 'nama' => 'Palembang'],
+                ['id' => 8, 'nama' => 'Lubuklinggau'],
+                // ... dst
+            ],
+            'Bangka Belitung' => [
+                ['id' => 9, 'nama' => 'Pangkal Pinang'],
+                ['id' => 10, 'nama' => 'Sungai Liat'],
+                // ... dst
+            ],
+            'Kalimantan Barat' => [
+                ['id' => 11, 'nama' => 'Pontianak'],
+                ['id' => 12, 'nama' => 'Singkawang'],
+                // ... dst
+            ],
+        ];
+
+        // jika ingin mengambil dari database:
+        // $kabupaten = Kabupaten::where('provinsi_nama', $provinsi)->get(['id', 'nama']);
+        // return response()->json($kabupaten);
+
+        $kabupaten = $data[$provinsi] ?? [];
+        
+        return response()->json($kabupaten);
     }
 }

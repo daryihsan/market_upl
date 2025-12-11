@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash; // <-- TAMBAHKAN INI UNTUK PENGGUNAAN HASH
 
 class LoginController extends Controller
 {
@@ -26,19 +27,32 @@ class LoginController extends Controller
             'email_pic' => 'required',
             'password' => 'required'
         ]);
-        $user = User::where('email_pic', $request->email_pic)
-                    ->orWhere('nama_toko', $request->email_pic)
-                    ->first();
+
+        // filter role 'seller' saat mencari user
+        $user = User::where('role', 'seller')
+                     ->where(function($query) use ($request) {
+                         $query->where('email_pic', $request->email_pic)
+                               ->orWhere('nama_toko', $request->email_pic);
+                     })
+                     ->first();
+
         if ($user && Auth::attempt([
-            'email_pic' => $user->email_pic,
+            'email_pic' => $user->email_pic, 
             'password' => $request->password
         ])) {
-            return redirect()->route('seller.dashboard');
+            // cek tambahan status akun
+            if ($user->status_akun === 'active') { 
+                return redirect()->route('seller.dashboard');
+            } else {
+                Auth::logout(); // logout jika akun belum aktif
+                return back()->withErrors(['email_pic' => 'Akun Anda belum aktif. Silakan tunggu verifikasi.']);
+            }
         }
+
         return back()->withErrors(['email_pic' => 'Email/nama toko atau password salah']);
     }
 
-    // login admin (pake seeders tp blm diset)
+    // login admin (menggunakan data dari database yang di-seed)
     public function showAdmin()
     {
         return view('auth.login.admin');
@@ -47,17 +61,21 @@ class LoginController extends Controller
     public function processAdmin(Request $request)
     {
         $request->validate([
-            'username' => 'required',
+            'email_pic' => 'required',
             'password' => 'required'
         ]);
-        if (
-            $request->username === env('ADMIN_USER') &&
-            $request->password === env('ADMIN_PASS')
-        ) {
-            session(['is_admin' => true]);
+
+        // akun admin yang di-seed harus memiliki role='admin'
+        $admin = User::where('role', 'admin')
+                     ->where('email_pic', $request->email_pic)
+                     ->first();
+
+        if ($admin && Hash::check($request->password, $admin->password)) {
+            Auth::login($admin); 
+            
             return redirect()->route('platform.dashboard')->with('success','Login admin berhasil!');
         }
-
-        return back()->withErrors(['username' => 'Username atau password admin salah']);
+        // gagal
+        return back()->withErrors(['email_pic' => 'Email atau password Admin salah']);
     }
 }

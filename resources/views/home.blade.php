@@ -57,6 +57,8 @@ if (!$nextCategory || !$nextCategory->icon_path) {
 </head>
 <body class="bg-gray-50">
     @include('layouts.header')
+
+    {{-- HERO --}}
     <section class="hero-section text-center pt-20 pb-28 flex flex-col items-center justify-center">
         <div class="max-w-7xl mx-auto px-4">
             <h1 class="text-4xl sm:text-5xl font-bold text-gray-800 mb-4">
@@ -65,14 +67,41 @@ if (!$nextCategory || !$nextCategory->icon_path) {
             <p class="text-lg text-gray-600 mb-10">
                 Jelajahi berbagai kategori dan temukan barang impian Anda dengan harga terbaik
             </p>
+
             <div class="max-w-xl mx-auto">
-                <div class="relative flex items-center bg-white p-2 rounded-xl shadow-lg">
-                    <input type="text" placeholder="Cari Produk..." class="hero-search-input flex-grow pl-4 pr-4 py-3 border-none rounded-xl text-gray-700">
-                    <button class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-xl hover:bg-blue-700 transition duration-150 flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <form
+                    id="hero-search-form"
+                    action="{{ route('search') }}"
+                    method="GET"
+                    class="relative flex items-center bg-white p-2 rounded-xl shadow-lg"
+                >
+                    <input
+                        id="hero-search-input"
+                        type="text"
+                        name="q"
+                        placeholder="Cari Produk..."
+                        value="{{ request('q') }}"
+                        autocomplete="off"
+                        class="hero-search-input flex-grow pl-4 pr-4 py-3 border-none rounded-xl text-gray-700"
+                    >
+
+                    <button
+                        type="submit"
+                        class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-xl hover:bg-blue-700 transition duration-150 flex items-center space-x-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
                         <span class="hidden sm:inline">Cari Sekarang</span>
                     </button>
-                </div>
+
+                    {{-- DROPDOWN HASIL PENCARIAN --}}
+                    <div
+                        id="hero-search-dropdown"
+                        class="absolute left-2 right-2 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto hidden z-50"
+                    ></div>
+                </form>
             </div>
         </div>
     </section>
@@ -141,6 +170,63 @@ if (!$nextCategory || !$nextCategory->icon_path) {
             @endforelse
         </div>
     </section>
+
     @include('layouts.footer')
+
+    {{-- SCRIPT DROPDOWN SUGGESTION HERO SEARCH (PAKAI ENDPOINT /search?ajax=1 SAMA KAYAK HEADER) --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input    = document.getElementById('hero-search-input');
+        const dropdown = document.getElementById('hero-search-dropdown');
+        const form     = document.getElementById('hero-search-form');
+
+        if (!input || !dropdown || !form) return;
+
+        function clearDropdown() {
+            dropdown.innerHTML = '';
+            dropdown.classList.add('hidden');
+        }
+
+        input.addEventListener('keyup', function () {
+            const q = input.value.trim();
+
+            if (q === '') {
+                clearDropdown();
+                return;
+            }
+
+            fetch(`/search?ajax=1&q=${encodeURIComponent(q)}`)
+                .then(res => res.json())
+                .then(data => {
+                    dropdown.innerHTML = '';
+                    dropdown.classList.remove('hidden');
+
+                    if (!data || data.length === 0) {
+                        dropdown.innerHTML =
+                            '<div class="px-4 py-2 text-sm text-gray-500 text-left">Tidak ada produk ditemukan</div>';
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const a = document.createElement('a');
+                        a.href = `/product/${item.id}/detail`;
+                        a.className = 'block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left';
+                        a.textContent = item.name;
+                        dropdown.appendChild(a);
+                    });
+                })
+                .catch(() => {
+                    clearDropdown();
+                });
+        });
+
+        // klik luar form -> tutup dropdown
+        document.addEventListener('click', function (e) {
+            if (!form.contains(e.target)) {
+                clearDropdown();
+            }
+        });
+    });
+    </script>
 </body>
 </html>
