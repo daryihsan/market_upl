@@ -1,32 +1,3 @@
-@php
-    // Data dari PlatformController::dashboard()
-    $total_penjual_aktif = $total_penjual_aktif ?? 0;
-    $total_penjual_tidak_aktif = $total_penjual_tidak_aktif ?? 0;
-    $total_commenters = $total_commenters ?? 0;
-    $total_penjual = $total_penjual ?? 0;
-    $pending_verifications_count = $pending_verifications_count ?? 0;
-
-    $product_chart_data = $product_chart_data ?? ['labels' => [], 'data' => []];
-    $location_chart_data = $location_chart_data ?? [];
-
-    // Persiapan data untuk Chart.js (Location Donut)
-    $location_labels = collect($location_chart_data)->pluck('provinsi')->toArray();
-    $location_percentages = collect($location_chart_data)->pluck('percentage')->toArray();
-    
-    // Warna yang menarik dan kontras
-    $location_colors = [
-        '#007bff', // Biru terang
-        '#28a745', // Hijau
-        '#ffc107', // Kuning
-        '#dc3545', // Merah
-        '#6f42c1', // Ungu
-        '#6c757d', // Abu-abu (untuk Lainnya)
-    ];
-
-    // Persiapan data untuk Chart.js (Product Bar)
-    $product_labels = $product_chart_data['labels']->toArray();
-    $product_counts = $product_chart_data['data']->toArray();
-@endphp
 <!DOCTYPE html>
 <html lang="id">
 
@@ -138,7 +109,6 @@
         </aside>
 
         {{-- MAIN --}}
-        
         <main class="main-content">
             {{-- Topbar: logo + title + date (consistent with other pages) --}}
             <div class="flex justify-between items-center mb-8">
@@ -177,7 +147,8 @@
                                         <div>
                                             <div class="text-sm text-gray-600">Aktif</div>
                                             <div class="text-xl font-bold text-slate-900">
-                                                {{ number_format($total_penjual_aktif) }}</div>
+                                                {{ number_format($total_penjual_aktif) }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -190,7 +161,8 @@
                                         <div>
                                             <div class="text-sm text-gray-600">Tidak Aktif</div>
                                             <div class="text-xl font-bold text-slate-900">
-                                                {{ number_format($total_penjual_tidak_aktif) }}</div>
+                                                {{ number_format($total_penjual_tidak_aktif) }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -220,7 +192,6 @@
                         </form>
                     </div>
 
-
                     <div>
                         {{-- chart --}}
                         <canvas id="reviewsLine" style="height:220px;"></canvas>
@@ -235,7 +206,8 @@
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-semibold text-slate-900">Sebaran Jumlah Produk Berdasarkan Kategori</h3>
                         <div class="small-muted">Menampilkan:
-                            {{ $selected_top_categories === 'all' ? 'Semua' : 'Top ' . $selected_top_categories }}</div>
+                            {{ $selected_top_categories === 'all' ? 'Semua' : 'Top ' . $selected_top_categories }}
+                        </div>
                     </div>
 
                     {{-- dropdown inside card --}}

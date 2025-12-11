@@ -61,7 +61,7 @@
                     <td>
                         <?php
                             $status = $seller->status_akun;
-                            $label = $status === 'active' ? 'Aktif' : ($status === 'pending' ? 'Pending' : 'Tidak Aktif');
+                            $label = $status === 'active' ? 'Aktif' : 'Tidak Aktif';
                         ?>
                         <?php echo e($label); ?>
 

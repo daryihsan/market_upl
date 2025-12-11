@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Product;
-use App\Models\Review; 
-use App\Models\Category; 
+use App\Models\Review;
+use App\Models\Category;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -44,14 +44,14 @@ class PlatformController extends Controller
         $categoriesAll = $categoriesQuery->get();
 
         if ($topCategories !== 'all') {
-            $topN = max(1, (int)$topCategories);
+            $topN = max(1, (int) $topCategories);
             $categoriesForChart = $categoriesAll->take($topN);
         } else {
             $categoriesForChart = $categoriesAll;
         }
 
-        $category_labels = $categoriesForChart->pluck('name')->map(fn($v) => (string)$v)->toArray();
-        $category_counts = $categoriesForChart->pluck('products_count')->map(fn($v) => (int)$v)->toArray();
+        $category_labels = $categoriesForChart->pluck('name')->map(fn($v) => (string) $v)->toArray();
+        $category_counts = $categoriesForChart->pluck('products_count')->map(fn($v) => (int) $v)->toArray();
 
         // Provinsi distribution (count sellers per provinsi)
         $provinsiDistribution = User::whereNotNull('nama_toko')
@@ -61,7 +61,7 @@ class PlatformController extends Controller
             ->get();
 
         $provinsi_labels = $provinsiDistribution->pluck('provinsi')->map(fn($v) => $v ?: 'Tidak Diketahui')->toArray();
-        $provinsi_counts = $provinsiDistribution->pluck('total')->map(fn($v) => (int)$v)->toArray();
+        $provinsi_counts = $provinsiDistribution->pluck('total')->map(fn($v) => (int) $v)->toArray();
 
         // Reviews (interaction) grouped by date within period
         $end = now()->endOfDay();
@@ -83,7 +83,7 @@ class PlatformController extends Controller
 
         $reviewsMap = $reviewsByDate->pluck('total', 'date')->toArray();
         $reviews_labels = array_map(fn($d) => date('d M', strtotime($d)), $period);
-        $reviews_counts = array_map(fn($d) => isset($reviewsMap[$d]) ? (int)$reviewsMap[$d] : 0, $period);
+        $reviews_counts = array_map(fn($d) => isset($reviewsMap[$d]) ? (int) $reviewsMap[$d] : 0, $period);
 
         $total_pengunjung_rating_period = array_sum($reviews_counts);
 
@@ -97,7 +97,7 @@ class PlatformController extends Controller
             ->orderByDesc('product_count')
             ->limit(10) // Ambil 10 kategori teratas agar grafik tidak terlalu padat
             ->get();
-        
+
         // Konversi ke format yang mudah digunakan di Chart.js
         $product_chart_data = [
             'labels' => $product_distribution->pluck('category_name'),
@@ -112,11 +112,11 @@ class PlatformController extends Controller
             ->groupBy('provinsi')
             ->orderByDesc('seller_count')
             ->get();
-        
+
         $total_counted_sellers = $location_distribution->sum('seller_count');
-        
+
         $location_chart_data = [];
-        
+
         // Ambil 5 provinsi teratas, sisanya masukkan ke 'Lainnya'
         foreach ($location_distribution->take(5) as $dist) {
             $location_chart_data[] = [
@@ -130,16 +130,16 @@ class PlatformController extends Controller
         if ($location_distribution->count() > 5) {
             $other_count = $location_distribution->skip(5)->sum('seller_count');
             $other_percentage = round(($other_count / $total_counted_sellers) * 100, 1);
-            
+
             if ($other_count > 0) {
-                 $location_chart_data[] = [
+                $location_chart_data[] = [
                     'provinsi' => 'Lainnya',
                     'count' => $other_count,
                     'percentage' => $other_percentage,
                 ];
             }
         }
-        
+
         // Mengirim semua data ke view
         return view('platform.dashboard', [
             'total_penjual_aktif' => $total_penjual_aktif,
@@ -173,14 +173,14 @@ class PlatformController extends Controller
     // 3. DETAIL VERIFIKASI
     public function verificationDetail($id)
     {
-        $seller = User::findOrFail($id);
+        $seller = User::with('documents')->findOrFail($id);
         return view('platform.verification_detail', compact('seller'));
     }
 
     // 4. PROSES VERIFIKASI
     public function processVerification(Request $request, $id)
     {
-        $seller = User::findOrFail($id);
+        $seller = User::with('documents')->findOrFail($id);
 
         $request->validate([
             'action' => 'required|in:approve,reject'
@@ -241,13 +241,13 @@ class PlatformController extends Controller
                 if ($statusFilter === 'aktif') {
                     $query->where('status_akun', 'active');
                 } elseif ($statusFilter === 'tidak_aktif') {
-                    $query->where('status_akun', 'rejected');
+                    $query->whereIn('status_akun', ['rejected', 'pending']);
                 }
-                
+
                 // Urutkan sesuai kebutuhan screenshot (aktif dulu baru tidak aktif)
                 $sellers = $query->orderBy(DB::raw("CASE WHEN status_akun = 'active' THEN 0 ELSE 1 END"))
-                                 ->orderBy('created_at', 'asc')
-                                 ->get();
+                    ->orderBy('created_at', 'asc')
+                    ->get();
 
                 $data['sellers'] = $sellers;
                 $data['statusFilter'] = $statusFilter;
@@ -271,9 +271,9 @@ class PlatformController extends Controller
                     ->sort();
 
                 $sellers = $query->orderBy('provinsi', 'asc')
-                                 ->orderBy('nama_toko', 'asc')
-                                 ->get();
-                
+                    ->orderBy('nama_toko', 'asc')
+                    ->get();
+
                 $data['sellers'] = $sellers;
                 $data['provinsiFilter'] = $provinsiFilter;
                 $data['provinces'] = $provinces; // Kirim daftar provinsi untuk dropdown
@@ -295,11 +295,11 @@ class PlatformController extends Controller
                     $ratingMin = (int) str_replace('+', '', $ratingFilter);
                     $query->where('rating', '>=', $ratingMin);
                 }
-                
+
                 // Urutkan berdasarkan rating menurun (sesuai SRS-MartPlace-11)
                 $products = $query->orderByDesc('rating')
-                                  ->orderBy('total_ulasan', 'desc')
-                                  ->get();
+                    ->orderBy('total_ulasan', 'desc')
+                    ->get();
 
                 // Ambil semua kategori untuk filter
                 $categories = Category::all();
@@ -337,13 +337,13 @@ class PlatformController extends Controller
             if ($statusFilter === 'aktif') {
                 $query->where('status_akun', 'active');
             } elseif ($statusFilter === 'tidak_aktif') {
-                $query->where('status_akun', 'rejected');
+                $query->whereIn('status_akun', ['rejected', 'pending']);
             }
 
             $sellers = $query->orderBy(DB::raw("CASE WHEN status_akun = 'active' THEN 0 ELSE 1 END"))
-                             ->orderBy('created_at', 'asc')
-                             ->get();
-            
+                ->orderBy('created_at', 'asc')
+                ->get();
+
             $statusLabel = match ($statusFilter) {
                 'aktif' => 'Aktif',
                 'tidak_aktif' => 'Tidak Aktif',
@@ -367,8 +367,8 @@ class PlatformController extends Controller
             }
 
             $sellers = $query->orderBy('provinsi', 'asc')
-                             ->orderBy('nama_toko', 'asc')
-                             ->get();
+                ->orderBy('nama_toko', 'asc')
+                ->get();
 
             $data['sellers'] = $sellers;
             $data['provinsi'] = $provinsiFilter;
@@ -383,7 +383,7 @@ class PlatformController extends Controller
             $ratingFilter = $request->query('rating');
 
             $query = Product::with(['user', 'category']);
-            
+
             // --- FIX: Ambil Label Kategori ---
             $categoryLabel = 'Semua Kategori';
             if ($categoryFilter) {
@@ -403,13 +403,13 @@ class PlatformController extends Controller
 
 
             $products = $query->orderByDesc('rating')
-                              ->orderBy('total_ulasan', 'desc')
-                              ->get();
+                ->orderBy('total_ulasan', 'desc')
+                ->get();
 
             $data['products'] = $products;
             $data['categoryLabel'] = $categoryLabel; // Kirim label ke view
             $data['ratingLabel'] = $ratingLabel;   // Kirim label ke view
-            
+
             $view = 'platform.pdf.laporan_produk_rating';
             $filename = 'laporan_produk_lengkap.pdf';
             $paper = 'A4';
