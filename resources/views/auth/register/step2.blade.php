@@ -130,12 +130,39 @@ tailwind.config = {
         <select name="provinsi" id="provinsi-select"
             class="form-select block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5">
             <option value="">Pilih Provinsi</option>
+            <option value="Aceh" {{ old('provinsi')=='Aceh'?'selected':'' }}>Aceh</option>
+            <option value="Sumatera Utara" {{ old('provinsi')=='Sumatera Utara'?'selected':'' }}>Sumatera Utara</option>
+            <option value="Sumatera Barat" {{ old('provinsi')=='Sumatera Barat'?'selected':'' }}>Sumatera Barat</option>
+            <option value="Riau" {{ old('provinsi')=='Riau'?'selected':'' }}>Riau</option>
+            <option value="Jambi" {{ old('provinsi')=='Jambi'?'selected':'' }}>Jambi</option>
+            <option value="Sumatra Selatan" {{ old('provinsi')=='Sumatra Selatan'?'selected':'' }}>Sumatra Selatan</option>
+            <option value="Bengkulu" {{ old('provinsi')=='Bengkulu'?'selected':'' }}>Bengkulu</option>      
+            <option value="Lampung" {{ old('provinsi')=='Lampung'?'selected':'' }}>Lampung</option>
+            <option value="Bangka Belitung" {{ old('provinsi')=='Bangka Belitung'?'selected':'' }}>Bangka Belitung</option>
+            <option value="Kepulauan Riau" {{ old('provinsi')=='Kepulauan Riau'?'selected':'' }}>Kepulauan Riau</option>
             <option value="DKI Jakarta" {{ old('provinsi')=='DKI Jakarta'?'selected':'' }}>DKI Jakarta</option>
             <option value="Jawa Barat" {{ old('provinsi')=='Jawa Barat'?'selected':'' }}>Jawa Barat</option>
             <option value="Jawa Tengah" {{ old('provinsi')=='Jawa Tengah'?'selected':'' }}>Jawa Tengah</option>
-            <option value="Sumatra Selatan" {{ old('provinsi')=='Sumatra Selatan'?'selected':'' }}>Sumatra Selatan</option>
-            <option value="Bangka Belitung" {{ old('provinsi')=='Bangka Belitung'?'selected':'' }}>Bangka Belitung</option>
+            <option value="DI Yogyakarta" {{ old('provinsi')=='DI Yogyakarta'?'selected':'' }}>DI Yogyakarta</option>
+            <option value="Jawa Timur" {{ old('provinsi')=='Jawa Timur'?'selected':'' }}>Jawa Timur</option>       
+            <option value="Banten" {{ old('provinsi')=='Banten'?'selected':'' }}>Banten</option>
+            <option value="Bali" {{ old('provinsi')=='Bali'?'selected':'' }}>Bali</option>
+            <option value="Nusa Tenggara Barat" {{ old('provinsi')=='Nusa Tenggara Barat'?'selected':'' }}>Nusa Tenggara Barat</option>
+            <option value="Nusa Tenggara Timur" {{ old('provinsi')=='Nusa Tenggara Timur'?'selected':'' }}>Nusa Tenggara Timur</option> 
             <option value="Kalimantan Barat" {{ old('provinsi')=='Kalimantan Barat'?'selected':'' }}>Kalimantan Barat</option>
+            <option value="Kalimantan Tengah" {{ old('provinsi')=='Kalimantan Tengah'?'selected':'' }}>Kalimantan Tengah</option>       
+            <option value="Kalimantan Selatan" {{ old('provinsi')=='Kalimantan Selatan'?'selected':'' }}>Kalimantan Selatan</option>
+            <option value="Kalimantan Timur" {{ old('provinsi')=='Kalimantan Timur'?'selected':'' }}>Kalimantan Timur</option>
+            <option value="Kalimantan Utara" {{ old('provinsi')=='Kalimantan Utara'?'selected':'' }}>Kalimantan Utara</option>
+            <option value="Sulawesi Utara" {{ old('provinsi')=='Sulawesi Utara'?'selected':'' }}>Sulawesi Utara</option>
+            <option value="Gorontalo" {{ old('provinsi')=='Gorontalo'?'selected':'' }}>Gorontalo</option>
+            <option value="Sulawesi Tengah" {{ old('provinsi')=='Sulawesi Tengah'?'selected':'' }}>Sulawesi Tengah</option>
+            <option value="Sulawesi Selatan" {{ old('provinsi')=='Sulawesi Selatan'?'selected':'' }}>Sulawesi Selatan</option>
+            <option value="Sulawesi Tenggara" {{ old('provinsi')=='Sulawesi Tenggara'?'selected':'' }}>Sulawesi Tenggara</option>
+            <option value="Maluku" {{ old('provinsi')=='Maluku'?'selected':'' }}>Maluku</option>
+            <option value="Maluku Utara" {{ old('provinsi')=='Maluku Utara'?'selected':'' }}>Maluku Utara</option>
+            <option value="Papua Barat" {{ old('provinsi')=='Papua Barat'?'selected':'' }}>Papua Barat</option>
+            <option value="Papua" {{ old('provinsi')=='Papua'?'selected':'' }}>Papua</option>       
             </select>
         </div>
 
