@@ -21,8 +21,8 @@ class DatabaseSeeder extends Seeder
             'rw' => '001',
             'kelurahan' => 'Admin Jaya',
             'kecamatan' => 'Admin Sentosa',
-            'kabupaten' => 'Admin City',
-            'provinsi' => 'Admin Land',
+            'kabupaten' => 'Jakarta Pusat',
+            'provinsi' => 'DKI Jakarta',
             'nik' => '0000000000000001', // NIK unik dummy
             
             'password' => bcrypt('pass123'), 

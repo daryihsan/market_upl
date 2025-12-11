@@ -53,12 +53,19 @@ class CatalogController extends Controller
 
 
         // lokasi
-        if (!empty($location)) {
-            $query->whereHas('user', function ($q) use ($location) {
-                $q->whereIn('kabupaten', $location);
-                // ->orWhereIn('kota', $location);
+        // if (!empty($location)) {
+        //     $query->whereHas('user', function ($q) use ($location) {
+        //         $q->whereIn('kabupaten', $location);
+        //         // ->orWhereIn('kota', $location);
+        //     });
+        // }
+
+        if ($request->filled('lokasi')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->whereIn('kabupaten', $request->lokasi);
             });
         }
+
 
         //  harga
         $query->whereBetween('price', [(float)$minPrice, (float)$maxPrice]);

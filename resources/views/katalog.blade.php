@@ -93,7 +93,7 @@
                         <h3 class="font-semibold text-gray-700 mb-3">Kategori</h3>
                         <div class="space-y-2 text-sm text-gray-600">
                             @php
-                                $categories = \App\Models\Category::all();
+                                $categories = \App\Models\Category::all(); 
                             @endphp
                             @foreach ($categories as $cat)
                                 <label class="flex items-center space-x-2">
@@ -110,12 +110,15 @@
                         <h3 class="font-semibold text-gray-700 mb-3">Lokasi</h3>
                         <div class="space-y-2 text-sm text-gray-600">
                             @php
-                                $locations = ['Jakarta', 'Surabaya', 'Bandung', 'Semarang'];
+                                $locations = \App\Models\User::select('kabupaten')
+                                    ->whereNotNull('kabupaten')
+                                    ->distinct()
+                                    ->pluck('kabupaten');
                             @endphp
                             @foreach ($locations as $loc)
                                 <label class="flex items-center space-x-2">
-                                    <input type="checkbox" name="lokasi" value="{{ $loc }}" 
-                                        {{ ($filters['lokasi'] ?? '') === $loc ? 'checked' : '' }} 
+                                    <input type="checkbox" name="lokasi[]" value="{{ $loc }}"
+                                        {{ in_array($loc, $filters['lokasi'] ?? []) ? 'checked' : '' }}
                                         class="form-checkbox text-blue-600 rounded">
                                     <span>{{ $loc }}</span>
                                 </label>
