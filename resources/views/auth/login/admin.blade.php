@@ -56,23 +56,23 @@
             </p> -->
 
             <!-- Login Form -->
-            <form action="{{ route('login.post.login') }}" method="POST" class="space-y-6">
+            <form action="{{ route('login.post.admin') }}" method="POST" class="space-y-6">
                 @csrf
 
-                <!-- Email / Username
+                <!-- Email -->
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">
-                        Email atau Nama Toko
+                    <label for="email_pic" class="block text-sm font-medium text-gray-700">
+                        Email Admin
                     </label>
                     <input 
                         type="text"
-                        name="email"
-                        id="email"
-                        placeholder="Masukkan email atau nama toko Anda"
+                        name="email_pic"
+                        id="email_pic"
+                        placeholder="Masukkan email Admin"
                         required
                         class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-quad-light-blue focus:border-quad-light-blue sm:text-base"
                     >
-                </div> -->
+                </div>
 
                 <!-- Password -->
                 <div>

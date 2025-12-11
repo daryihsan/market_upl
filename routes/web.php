@@ -111,7 +111,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // ADMIN --------------------------------------------------------------------------
 // platform
 Route::prefix('platform')->name('platform.')->group(function () {
-
+// Route::middleware(['auth'])->prefix('platform')->name('platform.')->group(function () {
+  
     // DASHBOARD ADMIN
     Route::get('/dashboard', [PlatformController::class, 'dashboard'])
         ->name('dashboard');

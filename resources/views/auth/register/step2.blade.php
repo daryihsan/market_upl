@@ -133,6 +133,7 @@ tailwind.config = {
             <option value="DKI Jakarta" {{ old('provinsi')=='DKI Jakarta'?'selected':'' }}>DKI Jakarta</option>
             <option value="Jawa Barat" {{ old('provinsi')=='Jawa Barat'?'selected':'' }}>Jawa Barat</option>
             <option value="Jawa Tengah" {{ old('provinsi')=='Jawa Tengah'?'selected':'' }}>Jawa Tengah</option>
+            
         </select>
         @error('provinsi')
             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
