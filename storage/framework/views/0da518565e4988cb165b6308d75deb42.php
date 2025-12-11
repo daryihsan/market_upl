@@ -30,9 +30,10 @@
     </div>
     
 <div class="meta">
-        Filter Status: <strong>{{ $statusLabel }}</strong><br>
-        Tanggal Generate: <strong>{{ $generatedAt->format('d M Y H:i') }}</strong><br>
-        Diproses oleh: {{ $processedBy }}
+        Filter Status: <strong><?php echo e($statusLabel); ?></strong><br>
+        Tanggal Generate: <strong><?php echo e($generatedAt->format('d M Y H:i')); ?></strong><br>
+        Diproses oleh: <?php echo e($processedBy); ?>
+
     </div>
 
     
@@ -50,29 +51,30 @@
         </thead>
         
 <tbody>
-            @forelse ($sellers as $index => $seller)
+            <?php $__empty_1 = true; $__currentLoopData = $sellers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $seller): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 
 <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td>{{ str_pad(strstr($seller->email_pic, '@', true), 3, '0', STR_PAD_LEFT) }}</td>
-                    <td>{{ $seller->nama_pic ?? '-' }}</td>
-                    <td>{{ $seller->nama_toko ?? '-' }}</td>
+                    <td class="text-center"><?php echo e($index + 1); ?></td>
+                    <td><?php echo e(str_pad(strstr($seller->email_pic, '@', true), 3, '0', STR_PAD_LEFT)); ?></td>
+                    <td><?php echo e($seller->nama_pic ?? '-'); ?></td>
+                    <td><?php echo e($seller->nama_toko ?? '-'); ?></td>
                     <td>
-                        @php
+                        <?php
                             $status = $seller->status_akun;
                             $label = $status === 'active' ? 'Aktif' : 'Tidak Aktif';
-                        @endphp
-                        {{ $label }}
+                        ?>
+                        <?php echo e($label); ?>
+
                     </td>
                 </tr>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 
 <tr>
                     <td colspan="6" class="text-center">Tidak ada data penjual.</td>
                 </tr>
-            @endforelse
+            <?php endif; ?>
         </tbody>
     </table>
 
 </body>
-</html>
+</html><?php /**PATH C:\laragon\www\QuadMarket\resources\views/platform/pdf/laporan_status_penjual.blade.php ENDPATH**/ ?>

@@ -149,7 +149,7 @@
                                         <p class="text-xs text-text-secondary dark:text-gray-400">atau seret dan lepas</p>
                                     </div>
 
-                                    <input id="dropzone-file-pic" name="foto_pic" type="file" class="hidden" />
+                                    <input id="dropzone-file-pic" name="foto_pic" type="file" class="hidden" accept="image/*" />
                                 </label>
                             </div>
                             @error('foto_pic')
@@ -177,7 +177,7 @@
                                         <p class="text-xs text-text-secondary dark:text-gray-400">atau seret dan lepas</p>
                                     </div>
 
-                                    <input id="dropzone-file-ktp" name="foto_ktp" type="file" class="hidden" />
+                                    <input id="dropzone-file-ktp" name="foto_ktp" type="file" class="hidden" accept="image/*,.pdf" />
                                 </label>
                             </div>
                             @error('foto_ktp')

@@ -34,9 +34,10 @@
     </div>
     
 <div class="meta">
-        Filter Provinsi: <strong>{{ $provinsi }}</strong><br>
-        Tanggal Generate: <strong>{{ $generatedAt->format('d M Y H:i') }}</strong><br>
-        Diproses oleh: {{ $processedBy }}
+        Filter Provinsi: <strong><?php echo e($provinsi); ?></strong><br>
+        Tanggal Generate: <strong><?php echo e($generatedAt->format('d M Y H:i')); ?></strong><br>
+        Diproses oleh: <?php echo e($processedBy); ?>
+
     </div>
 
     
@@ -53,22 +54,22 @@
         </thead>
         
 <tbody>
-            @forelse ($sellers as $index => $seller)
+            <?php $__empty_1 = true; $__currentLoopData = $sellers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $seller): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 
 <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td>{{ $seller->nama_toko ?? '-' }}</td>
-                    <td>{{ $seller->nama_pic ?? '-' }}</td>
-                    <td>{{ $seller->provinsi ?? '-' }}</td>
+                    <td class="text-center"><?php echo e($index + 1); ?></td>
+                    <td><?php echo e($seller->nama_toko ?? '-'); ?></td>
+                    <td><?php echo e($seller->nama_pic ?? '-'); ?></td>
+                    <td><?php echo e($seller->provinsi ?? '-'); ?></td>
                 </tr>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 
 <tr>
                     <td colspan="6" class="text-center">Tidak ada data penjual.</td>
                 </tr>
-            @endforelse
+            <?php endif; ?>
         </tbody>
     </table>
 
 </body>
-</html>
+</html><?php /**PATH C:\laragon\www\QuadMarket\resources\views/platform/pdf/laporan_per_provinsi.blade.php ENDPATH**/ ?>

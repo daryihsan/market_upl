@@ -39,10 +39,11 @@
     </div>
     
 <div class="meta">
-        Filter Kategori: <strong>{{ $categoryLabel ?? 'Semua Kategori' }}</strong><br>
-        Filter Rating Minimum: <strong>{{ $ratingLabel ?? 'Semua Rating' }}</strong><br>
-        Tanggal Generate: <strong>{{ $generatedAt->format('d M Y H:i') }}</strong><br>
-        Diproses oleh: {{ $processedBy }}
+        Filter Kategori: <strong><?php echo e($categoryLabel ?? 'Semua Kategori'); ?></strong><br>
+        Filter Rating Minimum: <strong><?php echo e($ratingLabel ?? 'Semua Rating'); ?></strong><br>
+        Tanggal Generate: <strong><?php echo e($generatedAt->format('d M Y H:i')); ?></strong><br>
+        Diproses oleh: <?php echo e($processedBy); ?>
+
     </div>
     
 <table>
@@ -61,25 +62,25 @@
         </thead>
         
 <tbody>
-            @forelse ($products as $index => $product)
+            <?php $__empty_1 = true; $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 
 <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td>{{ $product->name }}</td>
-                    <td>{{ $product->category->name ?? '-' }}</td>
-                    <td class="text-right">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
-                    <td class="text-center">{{ number_format($product->rating ?? 0, 1) }}</td>
-                    <td>{{ $product->user->nama_toko ?? 'N/A' }}</td>
-                    <td>{{ $product->user->provinsi ?? 'N/A' }}</td>
+                    <td class="text-center"><?php echo e($index + 1); ?></td>
+                    <td><?php echo e($product->name); ?></td>
+                    <td><?php echo e($product->category->name ?? '-'); ?></td>
+                    <td class="text-right">Rp <?php echo e(number_format($product->price, 0, ',', '.')); ?></td>
+                    <td class="text-center"><?php echo e(number_format($product->rating ?? 0, 1)); ?></td>
+                    <td><?php echo e($product->user->nama_toko ?? 'N/A'); ?></td>
+                    <td><?php echo e($product->user->provinsi ?? 'N/A'); ?></td>
                 </tr>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 
 <tr>
                     <td colspan="8" class="text-center">Tidak ada data produk.</td>
                 </tr>
-            @endforelse
+            <?php endif; ?>
         </tbody>
     </table>
 
 </body>
-</html>
+</html><?php /**PATH C:\laragon\www\QuadMarket\resources\views/platform/pdf/laporan_produk_rating.blade.php ENDPATH**/ ?>
