@@ -38,8 +38,8 @@ tailwind.config = {
 </head>
 
 <body class="font-display bg-background-light dark:bg-background-dark text-[#0f3343] dark:text-white/90">
-<div class="relative flex min-h-screen w-full flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-<div class="w-full max-w-3xl">
+    <div class="relative flex min-h-screen w-full flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div class="w-full max-w-3xl">
 
 <!-- Progress -->
 <div class="mb-8 px-4">
@@ -127,31 +127,24 @@ tailwind.config = {
 
     <div>
         <label class="block pb-2 text-sm font-medium">Provinsi</label>
-        <select name="provinsi"
+        <select name="provinsi" id="provinsi-select"
             class="form-select block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5">
             <option value="">Pilih Provinsi</option>
             <option value="DKI Jakarta" {{ old('provinsi')=='DKI Jakarta'?'selected':'' }}>DKI Jakarta</option>
             <option value="Jawa Barat" {{ old('provinsi')=='Jawa Barat'?'selected':'' }}>Jawa Barat</option>
             <option value="Jawa Tengah" {{ old('provinsi')=='Jawa Tengah'?'selected':'' }}>Jawa Tengah</option>
-            
-        </select>
-        @error('provinsi')
-            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-        @enderror
-    </div>
+            <option value="Sumatra Selatan" {{ old('provinsi')=='Sumatra Selatan'?'selected':'' }}>Sumatra Selatan</option>
+            <option value="Bangka Belitung" {{ old('provinsi')=='Bangka Belitung'?'selected':'' }}>Bangka Belitung</option>
+            <option value="Kalimantan Barat" {{ old('provinsi')=='Kalimantan Barat'?'selected':'' }}>Kalimantan Barat</option>
+            </select>
+        </div>
 
     <div>
         <label class="block pb-2 text-sm font-medium">Kabupaten/Kota</label>
-        <select name="kabupaten"
-            class="form-select block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5">
-            <option value="">Pilih Kabupaten/Kota</option>
-            <option value="Jakarta Pusat" {{ old('kabupaten')=='Jakarta Pusat'?'selected':'' }}>Jakarta Pusat</option>
-            <option value="Bandung" {{ old('kabupaten')=='Bandung'?'selected':'' }}>Bandung</option>
-            <option value="Semarang" {{ old('kabupaten')=='Semarang'?'selected':'' }}>Semarang</option>
+        <select name="kabupaten" id="kabupaten-select"
+            class="form-select block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5" disabled>
+            <option value="">Pilih Provinsi Dahulu</option>
         </select>
-        @error('kabupaten')
-            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-        @enderror
     </div>
 </div>
 
@@ -173,5 +166,52 @@ tailwind.config = {
 </div>
 </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const provinsiSelect = document.getElementById('provinsi-select');
+        const kabupatenSelect = document.getElementById('kabupaten-select');
+
+        provinsiSelect.addEventListener('change', function () {
+            const selectedProvinsi = this.value;
+
+            // reset dropdown Kabupaten
+            kabupatenSelect.innerHTML = '<option value="">Memuat...</option>';
+            kabupatenSelect.disabled = true;
+
+            if (selectedProvinsi) {
+                // ganti placeholder di route AJAX dengan nilai provinsi yang dipilih
+                const url = '{{ route("ajax.get.kabupaten", ["provinsi" => "PROVINCE_PLACEHOLDER"]) }}'.replace('PROVINCE_PLACEHOLDER', selectedProvinsi);
+
+                // permintaan AJAX (menggunakan Fetch API)
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        // bersihkan dan isi ulang dropdown Kabupaten
+                        kabupatenSelect.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+                        if (data.length > 0) {
+                            data.forEach(kab => {
+                                const option = document.createElement('option');
+                                option.value = kab.nama; // 'nama' untuk value
+                                option.textContent = kab.nama;
+                                kabupatenSelect.appendChild(option);
+                            });
+                            kabupatenSelect.disabled = false;
+                        } else {
+                            kabupatenSelect.innerHTML = '<option value="">Tidak ada data Kabupaten</option>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                        kabupatenSelect.innerHTML = '<option value="">Gagal memuat data</option>';
+                    });
+            } else {
+                // jika provinsi kosong, kembalikan ke kondisi awal
+                kabupatenSelect.innerHTML = '<option value="">Pilih Provinsi Dahulu</option>';
+                kabupatenSelect.disabled = true;
+            }
+        });
+    });
+</script>
 </body>
 </html>

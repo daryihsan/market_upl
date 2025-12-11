@@ -59,6 +59,9 @@ Route::prefix('register')->name('register.')->group(function () {
     Route::get('/success', [RegisterController::class, 'showSuccess'])->name('success');
 });
 
+// Route untuk mengambil data Kabupaten/Kota berdasarkan Provinsi
+Route::get('/get-kabupaten/{provinsi}', [RegisterController::class, 'getKabupaten'])->name('ajax.get.kabupaten');
+
 // verif email
 Route::get('/email/verify/{token}/{email}', [VerificationController::class, 'verify'])
     ->name('verification.verify')

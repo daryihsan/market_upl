@@ -81,9 +81,9 @@
                         <label for="password" class="block text-sm font-medium text-gray-700">
                             Kata Sandi
                         </label>
-                        <a href="#" class="text-sm font-medium text-quad-light-blue hover:text-blue-700">
+                        <!-- <a href="#" class="text-sm font-medium text-quad-light-blue hover:text-blue-700">
                             Lupa Kata Sandi?
-                        </a>
+                        </a> -->
                     </div>
 
                     <div class="mt-1 relative">
