@@ -74,7 +74,42 @@
             </form>
         </div>
 
-        {{-- LIST PRODUK --}}
+        {{-- FILTER SECTION --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-white p-4 rounded-lg shadow">
+            <form action="{{ route('search') }}" method="GET" class="flex flex-col gap-4">
+                <input type="hidden" name="q" value="{{ $q }}">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter Provinsi</label>
+                    <select name="provinsi" class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 focus:ring-blue-600 focus:border-blue-600" onchange="this.form.submit()">
+                        <option value="">-- Semua Provinsi --</option>
+                        @foreach ($allProvinsi as $prov)
+                            <option value="{{ $prov }}" {{ $provinsi === $prov ? 'selected' : '' }}>
+                                {{ $prov }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter Kabupaten/Kota</label>
+                    <select name="kabupaten" class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 focus:ring-blue-600 focus:border-blue-600" onchange="this.form.submit()">
+                        <option value="">-- Semua Kabupaten/Kota --</option>
+                        @foreach ($allKabupaten as $kab)
+                            <option value="{{ $kab }}" {{ $kabupaten === $kab ? 'selected' : '' }}>
+                                {{ $kab }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @if ($provinsi !== '' || $kabupaten !== '')
+                    <a href="{{ route('search', ['q' => $q]) }}" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">
+                        ✕ Hapus Filter
+                    </a>
+                @endif
+            </form>
+        </div>
         @if ($products->count() === 0)
             <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
                 Tidak ada produk yang cocok dengan pencarian kamu.

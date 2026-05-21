@@ -10,8 +10,14 @@ class CatalogController extends Controller
     // homepage
     public function home()
     {
-        // mengambil 5 produk dengan total ulasan terbanyak dan relasi user
-        $trendingProducts = Product::with('user')->orderByDesc('total_ulasan')->take(5)->get();
+        // mengambil 5 produk dengan total ulasan terbanyak dan relasi user (hanya dari penjual approved)
+        $trendingProducts = Product::with('user')
+            ->whereHas('user', function ($userQuery) {
+                $userQuery->where('status_akun', 'active');
+            })
+            ->orderByDesc('total_ulasan')
+            ->take(5)
+            ->get();
         $categories = Category::all();
         return view('home', compact('trendingProducts', 'categories'));
     }
@@ -25,7 +31,12 @@ class CatalogController extends Controller
         $rating = $request->get('rating');
 
         // ambil query dasar + relasi user (lokasi dan nama toko)
-        $query = Product::query()->with('user');
+        // FILTER: Hanya tampilkan produk dari penjual yang status_akun = 'approved'
+        $query = Product::query()
+            ->with('user')
+            ->whereHas('user', function ($userQuery) {
+                $userQuery->where('status_akun', 'approved');
+            });
 
         // kategori
         $categoryModel = null;
@@ -79,7 +90,10 @@ class CatalogController extends Controller
         $products = $query->paginate(12)->withQueryString();
 
         // total produk sesuai filter
-        $totalQuery = Product::query();
+        $totalQuery = Product::query()
+            ->whereHas('user', function ($userQuery) {
+                $userQuery->where('status_akun', 'approved');
+            });
 
         if ($categoryInput) {
             if (is_numeric($categoryInput)) {

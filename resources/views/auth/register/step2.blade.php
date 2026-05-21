@@ -67,7 +67,7 @@ tailwind.config = {
         name="alamat_pic"
         rows="4"
         class="form-input block w-full resize-none rounded-lg border-form-border bg-background-light/50 dark:bg-white/5 dark:border-white/20 p-4 text-base focus:border-accent focus:ring-accent"
-        placeholder="Masukkan alamat lengkap toko Anda">{{ old('alamat_pic') }}</textarea>
+        placeholder="Masukkan alamat lengkap toko Anda">{{ old('alamat_pic', $registrationData['alamat_pic'] ?? '') }}</textarea>
     @error('alamat_pic')
         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
     @enderror
@@ -80,7 +80,7 @@ tailwind.config = {
         <input type="text" name="rt"
             class="form-input block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5"
             placeholder="Contoh: 001"
-            value="{{ old('rt') }}">
+            value="{{ old('rt', $registrationData['rt'] ?? '') }}">
         @error('rt')
             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
         @enderror
@@ -91,7 +91,7 @@ tailwind.config = {
         <input type="text" name="rw"
             class="form-input block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5"
             placeholder="Contoh: 002"
-            value="{{ old('rw') }}">
+            value="{{ old('rw', $registrationData['rw'] ?? '') }}">
         @error('rw')
             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
         @enderror
@@ -105,7 +105,7 @@ tailwind.config = {
         <input type="text" name="kelurahan"
             class="form-input block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5"
             placeholder="Masukkan kelurahan"
-            value="{{ old('kelurahan') }}">
+            value="{{ old('kelurahan', $registrationData['kelurahan'] ?? '') }}">
         @error('kelurahan')
             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
         @enderror
@@ -115,7 +115,7 @@ tailwind.config = {
         <input type="text" name="kecamatan"
             class="form-input block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5"
             placeholder="Masukkan kecamatan"
-            value="{{ old('kecamatan') }}">
+            value="{{ old('kecamatan', $registrationData['kecamatan'] ?? '') }}">
         @error('kecamatan')
             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
         @enderror
@@ -130,50 +130,51 @@ tailwind.config = {
         <select name="provinsi" id="provinsi-select"
             class="form-select block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5">
             <option value="">Pilih Provinsi</option>
-            <option value="Aceh" {{ old('provinsi')=='Aceh'?'selected':'' }}>Aceh</option>
-            <option value="Sumatera Utara" {{ old('provinsi')=='Sumatera Utara'?'selected':'' }}>Sumatera Utara</option>
-            <option value="Sumatera Barat" {{ old('provinsi')=='Sumatera Barat'?'selected':'' }}>Sumatera Barat</option>
-            <option value="Riau" {{ old('provinsi')=='Riau'?'selected':'' }}>Riau</option>
-            <option value="Jambi" {{ old('provinsi')=='Jambi'?'selected':'' }}>Jambi</option>
-            <option value="Sumatra Selatan" {{ old('provinsi')=='Sumatra Selatan'?'selected':'' }}>Sumatra Selatan</option>
-            <option value="Bengkulu" {{ old('provinsi')=='Bengkulu'?'selected':'' }}>Bengkulu</option>      
-            <option value="Lampung" {{ old('provinsi')=='Lampung'?'selected':'' }}>Lampung</option>
-            <option value="Bangka Belitung" {{ old('provinsi')=='Bangka Belitung'?'selected':'' }}>Bangka Belitung</option>
-            <option value="Kepulauan Riau" {{ old('provinsi')=='Kepulauan Riau'?'selected':'' }}>Kepulauan Riau</option>
-            <option value="DKI Jakarta" {{ old('provinsi')=='DKI Jakarta'?'selected':'' }}>DKI Jakarta</option>
-            <option value="Jawa Barat" {{ old('provinsi')=='Jawa Barat'?'selected':'' }}>Jawa Barat</option>
-            <option value="Jawa Tengah" {{ old('provinsi')=='Jawa Tengah'?'selected':'' }}>Jawa Tengah</option>
-            <option value="DI Yogyakarta" {{ old('provinsi')=='DI Yogyakarta'?'selected':'' }}>DI Yogyakarta</option>
-            <option value="Jawa Timur" {{ old('provinsi')=='Jawa Timur'?'selected':'' }}>Jawa Timur</option>       
-            <option value="Banten" {{ old('provinsi')=='Banten'?'selected':'' }}>Banten</option>
-            <option value="Bali" {{ old('provinsi')=='Bali'?'selected':'' }}>Bali</option>
-            <option value="Nusa Tenggara Barat" {{ old('provinsi')=='Nusa Tenggara Barat'?'selected':'' }}>Nusa Tenggara Barat</option>
-            <option value="Nusa Tenggara Timur" {{ old('provinsi')=='Nusa Tenggara Timur'?'selected':'' }}>Nusa Tenggara Timur</option> 
-            <option value="Kalimantan Barat" {{ old('provinsi')=='Kalimantan Barat'?'selected':'' }}>Kalimantan Barat</option>
-            <option value="Kalimantan Tengah" {{ old('provinsi')=='Kalimantan Tengah'?'selected':'' }}>Kalimantan Tengah</option>       
-            <option value="Kalimantan Selatan" {{ old('provinsi')=='Kalimantan Selatan'?'selected':'' }}>Kalimantan Selatan</option>
-            <option value="Kalimantan Timur" {{ old('provinsi')=='Kalimantan Timur'?'selected':'' }}>Kalimantan Timur</option>
-            <option value="Kalimantan Utara" {{ old('provinsi')=='Kalimantan Utara'?'selected':'' }}>Kalimantan Utara</option>
-            <option value="Sulawesi Utara" {{ old('provinsi')=='Sulawesi Utara'?'selected':'' }}>Sulawesi Utara</option>
-            <option value="Gorontalo" {{ old('provinsi')=='Gorontalo'?'selected':'' }}>Gorontalo</option>
-            <option value="Sulawesi Tengah" {{ old('provinsi')=='Sulawesi Tengah'?'selected':'' }}>Sulawesi Tengah</option>
-            <option value="Sulawesi Selatan" {{ old('provinsi')=='Sulawesi Selatan'?'selected':'' }}>Sulawesi Selatan</option>
-            <option value="Sulawesi Tenggara" {{ old('provinsi')=='Sulawesi Tenggara'?'selected':'' }}>Sulawesi Tenggara</option>
-            <option value="Maluku" {{ old('provinsi')=='Maluku'?'selected':'' }}>Maluku</option>
-            <option value="Maluku Utara" {{ old('provinsi')=='Maluku Utara'?'selected':'' }}>Maluku Utara</option>
-            <option value="Papua Barat" {{ old('provinsi')=='Papua Barat'?'selected':'' }}>Papua Barat</option>
-            <option value="Papua" {{ old('provinsi')=='Papua'?'selected':'' }}>Papua</option>       
+            <option value="Aceh" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Aceh'?'selected':'' }}>Aceh</option>
+            <option value="Sumatera Utara" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Sumatera Utara'?'selected':'' }}>Sumatera Utara</option>
+            <option value="Sumatera Barat" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Sumatera Barat'?'selected':'' }}>Sumatera Barat</option>
+            <option value="Riau" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Riau'?'selected':'' }}>Riau</option>
+            <option value="Jambi" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Jambi'?'selected':'' }}>Jambi</option>
+            <option value="Sumatera Selatan" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Sumatera Selatan'?'selected':'' }}>Sumatera Selatan</option>
+            <option value="Bengkulu" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Bengkulu'?'selected':'' }}>Bengkulu</option>      
+            <option value="Lampung" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Lampung'?'selected':'' }}>Lampung</option>
+            <option value="Bangka Belitung" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Bangka Belitung'?'selected':'' }}>Bangka Belitung</option>
+            <option value="Kepulauan Riau" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Kepulauan Riau'?'selected':'' }}>Kepulauan Riau</option>
+            <option value="DKI Jakarta" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='DKI Jakarta'?'selected':'' }}>DKI Jakarta</option>
+            <option value="Jawa Barat" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Jawa Barat'?'selected':'' }}>Jawa Barat</option>
+            <option value="Jawa Tengah" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Jawa Tengah'?'selected':'' }}>Jawa Tengah</option>
+            <option value="DI Yogyakarta" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='DI Yogyakarta'?'selected':'' }}>DI Yogyakarta</option>
+            <option value="Jawa Timur" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Jawa Timur'?'selected':'' }}>Jawa Timur</option>       
+            <option value="Banten" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Banten'?'selected':'' }}>Banten</option>
+            <option value="Bali" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Bali'?'selected':'' }}>Bali</option>
+            <option value="Nusa Tenggara Barat" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Nusa Tenggara Barat'?'selected':'' }}>Nusa Tenggara Barat</option>
+            <option value="Nusa Tenggara Timur" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Nusa Tenggara Timur'?'selected':'' }}>Nusa Tenggara Timur</option> 
+            <option value="Kalimantan Barat" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Kalimantan Barat'?'selected':'' }}>Kalimantan Barat</option>
+            <option value="Kalimantan Tengah" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Kalimantan Tengah'?'selected':'' }}>Kalimantan Tengah</option>       
+            <option value="Kalimantan Selatan" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Kalimantan Selatan'?'selected':'' }}>Kalimantan Selatan</option>
+            <option value="Kalimantan Timur" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Kalimantan Timur'?'selected':'' }}>Kalimantan Timur</option>
+            <option value="Kalimantan Utara" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Kalimantan Utara'?'selected':'' }}>Kalimantan Utara</option>
+            <option value="Sulawesi Utara" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Sulawesi Utara'?'selected':'' }}>Sulawesi Utara</option>
+            <option value="Sulawesi Tengah" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Sulawesi Tengah'?'selected':'' }}>Sulawesi Tengah</option>
+            <option value="Sulawesi Selatan" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Sulawesi Selatan'?'selected':'' }}>Sulawesi Selatan</option>
+            <option value="Sulawesi Tenggara" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Sulawesi Tenggara'?'selected':'' }}>Sulawesi Tenggara</option>
+            <option value="Sulawesi Barat" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Sulawesi Barat'?'selected':'' }}>Sulawesi Barat</option>
+            <option value="Gorontalo" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Gorontalo'?'selected':'' }}>Gorontalo</option>
+            <option value="Maluku" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Maluku'?'selected':'' }}>Maluku</option>
+            <option value="Maluku Utara" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Maluku Utara'?'selected':'' }}>Maluku Utara</option>
+            <option value="Papua Barat" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Papua Barat'?'selected':'' }}>Papua Barat</option>
+            <option value="Papua" {{ old('provinsi', $registrationData['provinsi'] ?? '')=='Papua'?'selected':'' }}>Papua</option>       
             </select>
         </div>
 
-    <div>
-        <label class="block pb-2 text-sm font-medium">Kabupaten/Kota</label>
-        <select name="kabupaten" id="kabupaten-select"
-            class="form-select block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5" disabled>
-            <option value="">Pilih Provinsi Dahulu</option>
-        </select>
+        <div>
+            <label class="block pb-2 text-sm font-medium">Kabupaten/Kota</label>
+            <select name="kabupaten" id="kabupaten-select"
+                class="form-select block w-full rounded-lg p-4 bg-background-light/50 dark:bg-white/5" {{ empty(old('kabupaten', $registrationData['kabupaten'] ?? '')) ? 'disabled' : '' }}>
+                <option value="">{{ empty(old('kabupaten', $registrationData['kabupaten'] ?? '')) ? 'Pilih Provinsi Dahulu' : 'Pilih Kabupaten/Kota' }}</option>
+            </select>
+        </div>
     </div>
-</div>
 
 <!-- Button -->
 <div class="flex flex-col-reverse sm:flex-row sm:justify-between items-center pt-4 gap-4">
@@ -199,9 +200,8 @@ tailwind.config = {
         const provinsiSelect = document.getElementById('provinsi-select');
         const kabupatenSelect = document.getElementById('kabupaten-select');
 
-        provinsiSelect.addEventListener('change', function () {
-            const selectedProvinsi = this.value;
-
+        // Function untuk load kabupaten berdasarkan provinsi
+        function loadKabupaten(selectedProvinsi, selectedKabupaten = null) {
             // reset dropdown Kabupaten
             kabupatenSelect.innerHTML = '<option value="">Memuat...</option>';
             kabupatenSelect.disabled = true;
@@ -221,6 +221,12 @@ tailwind.config = {
                                 const option = document.createElement('option');
                                 option.value = kab.nama; // 'nama' untuk value
                                 option.textContent = kab.nama;
+                                
+                                // Set selected jika ada selectedKabupaten
+                                if (selectedKabupaten && kab.nama === selectedKabupaten) {
+                                    option.selected = true;
+                                }
+                                
                                 kabupatenSelect.appendChild(option);
                             });
                             kabupatenSelect.disabled = false;
@@ -237,6 +243,19 @@ tailwind.config = {
                 kabupatenSelect.innerHTML = '<option value="">Pilih Provinsi Dahulu</option>';
                 kabupatenSelect.disabled = true;
             }
+        }
+
+        // Trigger load kabupaten saat page load jika provinsi sudah dipilih (dari session)
+        const selectedProvinsi = provinsiSelect.value;
+        const selectedKabupaten = '{{ old("kabupaten", $registrationData["kabupaten"] ?? "") }}';
+        
+        if (selectedProvinsi) {
+            loadKabupaten(selectedProvinsi, selectedKabupaten);
+        }
+
+        // Event listener untuk change event
+        provinsiSelect.addEventListener('change', function () {
+            loadKabupaten(this.value, null);
         });
     });
 </script>

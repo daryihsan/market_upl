@@ -141,9 +141,13 @@
                                         Nama Toko
                                     </p>
                                     <input type="text" name="nama_toko"
-                                        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 h-12 px-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
-                                        placeholder="Masukkan nama toko Anda" />
+                                        class="w-full rounded-lg border @error('nama_toko') border-red-500 @else border-gray-300 dark:border-gray-600 @enderror bg-white dark:bg-gray-800 h-12 px-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
+                                        placeholder="Masukkan nama toko Anda"
+                                        value="{{ old('nama_toko', $registrationData['nama_toko'] ?? '') }}" />
                                 </label>
+                                @error('nama_toko')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
@@ -152,9 +156,12 @@
                                         Deskripsi Singkat
                                     </p>
                                     <textarea name="deskripsi"
-                                        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 min-h-28 p-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
-                                        placeholder="Jelaskan sedikit tentang toko Anda"></textarea>
+                                        class="w-full rounded-lg border @error('deskripsi') border-red-500 @else border-gray-300 dark:border-gray-600 @enderror bg-white dark:bg-gray-800 min-h-28 p-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
+                                        placeholder="Jelaskan sedikit tentang toko Anda">{{ old('deskripsi', $registrationData['deskripsi'] ?? '') }}</textarea>
                                 </label>
+                                @error('deskripsi')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
@@ -163,9 +170,13 @@
                                         Nama PIC
                                     </p>
                                     <input type="text" name="nama_pic"
-                                        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 h-12 px-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
-                                        placeholder="Nama lengkap contact person" />
+                                        class="w-full rounded-lg border @error('nama_pic') border-red-500 @else border-gray-300 dark:border-gray-600 @enderror bg-white dark:bg-gray-800 h-12 px-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
+                                        placeholder="Nama lengkap contact person"
+                                        value="{{ old('nama_pic', $registrationData['nama_pic'] ?? '') }}" />
                                 </label>
+                                @error('nama_pic')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div class="grid sm:grid-cols-2 gap-6">
@@ -175,9 +186,13 @@
                                             No. HP PIC
                                         </p>
                                         <input type="tel" name="hp_pic"
-                                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 h-12 px-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
-                                            placeholder="0812xxxxxxxx" />
+                                            class="w-full rounded-lg border @error('hp_pic') border-red-500 @else border-gray-300 dark:border-gray-600 @enderror bg-white dark:bg-gray-800 h-12 px-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
+                                            placeholder="0812xxxxxxxx"
+                                            value="{{ old('hp_pic', $registrationData['hp_pic'] ?? '') }}" />
                                     </label>
+                                    @error('hp_pic')
+                                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
                                 </div>
 
                                 <div>
@@ -186,9 +201,13 @@
                                             Email PIC
                                         </p>
                                         <input type="email" name="email_pic"
-                                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 h-12 px-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
-                                            placeholder="anda@email.com" />
+                                            class="w-full rounded-lg border @error('email_pic') border-red-500 @else border-gray-300 dark:border-gray-600 @enderror bg-white dark:bg-gray-800 h-12 px-4 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
+                                            placeholder="anda@email.com"
+                                            value="{{ old('email_pic', $registrationData['email_pic'] ?? '') }}" />
                                     </label>
+                                    @error('email_pic')
+                                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
 

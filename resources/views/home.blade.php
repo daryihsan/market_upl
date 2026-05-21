@@ -43,7 +43,7 @@ if (!$nextCategory || !$nextCategory->icon_path) {
             min-height: 400px;
             background-color: #e6f1f8;
             /* GANTI path gambar hero-bg.png dengan path gambar produk background Anda */
-            background-image: url('assets/images/hero.png'); 
+            background-image: url('/assets/images/hero.png'); 
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;

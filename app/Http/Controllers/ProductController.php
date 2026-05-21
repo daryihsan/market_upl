@@ -14,6 +14,13 @@ class ProductController extends Controller
      */
     public function create()
     {
+        // Check if seller is approved
+        $seller = Auth::user();
+        if ($seller->status_akun !== 'approved') {
+            return redirect()->back()
+                ->with('error', 'Akun Anda belum disetujui. Hanya penjual yang terverifikasi dapat menambah produk.');
+        }
+
         $categories = Category::all();
         return view('seller.products.create', compact('categories'));
     }
@@ -23,6 +30,13 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        // Check if seller is approved
+        $seller = Auth::user();
+        if ($seller->status_akun !== 'approved') {
+            return redirect()->back()
+                ->with('error', 'Akun Anda belum disetujui. Hanya penjual yang terverifikasi dapat menambah produk.');
+        }
+
         // 1. Validasi Data
         $validatedData = $request->validate([
             'name'        => 'required|string|max:255',

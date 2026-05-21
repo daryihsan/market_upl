@@ -4,30 +4,84 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Models\UserDocument;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+
 class RegisterController extends Controller
 {
     // step 1
-    public function showStep1()
+    public function showStep1(Request $request)
     {
-        return view('auth.register.step1');
+        $registrationData = $request->session()->get('registration_data', []);
+        return view('auth.register.step1', compact('registrationData'));
     }
 
     public function processStep1(Request $request)
     {
-        $validated = $request->validate([
-            'nama_toko' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string|max:500',
+        // Custom validation untuk No HP
+        $hp = trim($request->input('hp_pic', ''));
+        
+        $validator = Validator::make($request->all(), [
+            'nama_toko' => 'required|string|max:255|unique:users,nama_toko',
+            'deskripsi' => 'required|string|max:500',
             'nama_pic' => 'required|string|max:255',
-            'hp_pic' => 'required|string|max:15',
-            // 'email_pic' => 'required|email|unique:users,email',
+            'hp_pic' => 'required|string',
             'email_pic' => 'required|email|unique:users,email_pic',
-
+        ], [
+            'nama_toko.required' => 'Nama Toko wajib diisi',
+            'nama_toko.unique' => 'Nama toko sudah digunakan, silakan gunakan nama lain',
+            'deskripsi.required' => 'Deskripsi Singkat wajib diisi',
+            'nama_pic.required' => 'Nama PIC wajib diisi',
+            'hp_pic.required' => 'No Handphone PIC wajib diisi',
+            'email_pic.required' => 'Email PIC wajib diisi',
+            'email_pic.email' => 'Format email tidak valid',
+            'email_pic.unique' => 'Email sudah terdaftar, silakan gunakan email lain',
         ]);
-        $request->session()->put('registration_data', $validated);
+
+        // Custom validation untuk No HP
+        $validator->after(function ($validator) use ($hp) {
+            if (!empty($hp)) {
+                // Check if not numeric
+                if (!is_numeric($hp)) {
+                    $validator->errors()->add('hp_pic', 'No HP hanya boleh berisi angka');
+                    return;
+                }
+                
+                $length = strlen($hp);
+                
+                // Check length
+                if ($length < 10) {
+                    $validator->errors()->add('hp_pic', 'No HP terlalu pendek, minimal 10 digit');
+                    return;
+                }
+                if ($length > 13) {
+                    $validator->errors()->add('hp_pic', 'No HP terlalu panjang, maksimal 13 digit');
+                    return;
+                }
+                
+                // Check if starts with 08
+                if (!str_starts_with($hp, '08')) {
+                    $validator->errors()->add('hp_pic', 'No HP tidak sesuai, harus dimulai dengan 08xx');
+                    return;
+                }
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $validated = $validator->validated();
+        // MERGE dengan existing session data, jangan overwrite
+        $request->session()->put('registration_data', array_merge(
+            $request->session()->get('registration_data', []),
+            $validated
+        ));
 
         return redirect()->route('register.step2');
     }
@@ -39,7 +93,8 @@ class RegisterController extends Controller
             return redirect()->route('register.step1')
                 ->with('error', 'Silakan isi langkah 1 terlebih dahulu.');
         }
-        return view('auth.register.step2');
+        $registrationData = $request->session()->get('registration_data', []);
+        return view('auth.register.step2', compact('registrationData'));
     }
 
     public function processStep2(Request $request)
@@ -52,6 +107,14 @@ class RegisterController extends Controller
             'kecamatan' => 'required|string|max:255',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
+        ], [
+            'alamat_pic.required' => 'Alamat PIC wajib diisi',
+            'rt.required' => 'RT wajib diisi',
+            'rw.required' => 'RW wajib diisi',
+            'kelurahan.required' => 'Nama Kelurahan wajib diisi',
+            'kecamatan.required' => 'Nama Kecamatan wajib diisi',
+            'kabupaten.required' => 'Kabupaten/Kota wajib diisi',
+            'provinsi.required' => 'Propinsi wajib diisi',
         ]);
 
         $merged = array_merge(
@@ -69,8 +132,8 @@ class RegisterController extends Controller
         if (!$request->session()->has('registration_data')) {
             return redirect()->route('register.step1');
         }
-
-        return view('auth.register.step3');
+        $registrationData = $request->session()->get('registration_data', []);
+        return view('auth.register.step3', compact('registrationData'));
     }
 
     public function processStep3(Request $request)
@@ -80,24 +143,58 @@ class RegisterController extends Controller
                 ->with('error', 'Sesi pendaftaran hilang. Silakan mulai kembali.');
         }
 
-        $validated = $request->validate([
-            'nik' => ['required', 'string', 'digits:16', Rule::unique('users', 'nik')],
+        $nik = $request->input('nik', '');
+        
+        $validator = Validator::make($request->all(), [
+            'nik' => ['required', 'string', Rule::unique('users', 'nik')],
             'password' => 'required|min:8|confirmed',
-            // Validasi untuk file: gambar, maks 5MB
-            'foto_pic' => 'required|image|max:5120',
-            'foto_ktp' => 'required|image|max:5120',
+            'password_confirmation' => 'required',
+            'foto_pic' => 'required|mimes:jpg,jpeg,png|max:5120',
+            'foto_ktp' => 'required|mimes:jpg,jpeg,png|max:5120',
         ], [
-            'nik.digits' => 'Nomor KTP harus terdiri dari 16 digit.',
-            'nik.unique' => 'Nomor KTP ini sudah terdaftar.',
-            'password.min' => 'Kata sandi minimal 8 karakter.',
-            'foto_pic.required' => 'Foto PIC wajib diunggah.',
-            'foto_ktp.required' => 'File KTP PIC wajib diunggah.',
-            'foto_pic.image' => 'File Foto PIC harus berupa gambar.',
-            'foto_ktp.image' => 'File KTP PIC harus berupa gambar.',
-            'foto_pic.max' => 'Ukuran file Foto PIC maksimal 5MB.',
-            'foto_ktp.max' => 'Ukuran file KTP PIC maksimal 5MB.',
+            'nik.required' => 'No KTP PIC wajib diisi',
+            'nik.unique' => 'No KTP sudah terdaftar',
+            'password.required' => 'Kata Sandi wajib diisi',
+            'password.min' => 'Kata Sandi minimal 8 karakter',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok',
+            'password_confirmation.required' => 'Konfirmasi Kata Sandi wajib diisi',
+            'foto_pic.required' => 'Foto PIC wajib di-upload',
+            'foto_pic.mimes' => 'Format foto harus JPG atau PNG atau JPEG',
+            'foto_pic.max' => 'Ukuran foto melebihi batas maksimal',
+            'foto_ktp.required' => 'File KTP PIC wajib di-upload',
+            'foto_ktp.mimes' => 'Format file KTP harus JPG, PNG, atau JPEG',
+            'foto_ktp.max' => 'Ukuran file KTP melebihi batas maksimal',
         ]);
 
+        // Custom validation untuk NIK
+        $validator->after(function ($validator) use ($nik) {
+            if (!empty($nik)) {
+                if (!is_numeric($nik)) {
+                    $validator->errors()->add('nik', 'No KTP hanya boleh berisi angka');
+                    return;
+                }
+
+                $length = strlen($nik);
+
+                // Check length
+                if ($length < 16) {
+                    $validator->errors()->add('nik', 'No KTP terlalu pendek, minimal 16 digit');
+                    return;
+                }
+                if ($length > 16) {
+                    $validator->errors()->add('nik', 'No KTP terlalu panjang, maksimal 16 digit');
+                    return;
+                }
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $validated = $validator->validated();
         $registrationData = $request->session()->get('registration_data');
 
         // 1. Upload File
@@ -138,8 +235,6 @@ class RegisterController extends Controller
             'provinsi' => $finalData['provinsi'],
             'nik' => $finalData['nik'],
             'password' => $finalData['password'],
-            // 'foto_pic_url' => $finalData['foto_pic_url'],
-            // 'foto_ktp_url' => $finalData['foto_ktp_url'],
             'role' => $finalData['role'],
             'is_verified' => $finalData['is_verified'],
         ]);
@@ -420,90 +515,93 @@ class RegisterController extends Controller
                 ['id' => 221, 'nama' => 'Kabupaten Gunungkidul'],
                 ['id' => 222, 'nama' => 'Kabupaten Kulon Progo'],
                 ['id' => 223, 'nama' => 'Kabupaten Sleman'],
-                ['id' => 224, 'nama' => 'Kabupaten Klungkung'],
-                ['id' => 225, 'nama' => 'Kabupaten Bangli'],
-                ['id' => 226, 'nama' => 'Kabupaten Karangasem'],
+            ],
+            'Bali' => [
+                ['id' => 224, 'nama' => 'Kota Denpasar'],
+                ['id' => 225, 'nama' => 'Kabupaten Badung'],
+                ['id' => 226, 'nama' => 'Kabupaten Bangli'],
                 ['id' => 227, 'nama' => 'Kabupaten Gianyar'],
-                ['id' => 228, 'nama' => 'Kabupaten Tabanan'],
-                ['id' => 229, 'nama' => 'Kota Denpasar'],
-                ['id' => 230, 'nama' => 'Kabupaten Badung']
+                ['id' => 228, 'nama' => 'Kabupaten Jembrana'],
+                ['id' => 229, 'nama' => 'Kabupaten Karangasem'],
+                ['id' => 230, 'nama' => 'Kabupaten Klungkung'],
+                ['id' => 231, 'nama' => 'Kabupaten Tabanan'],
             ],
             'Jawa Timur' => [
-                ['id' => 225, 'nama' => 'Kota Batu'],
-                ['id' => 226, 'nama' => 'Kota Blitar'],
-                ['id' => 227, 'nama' => 'Kota Kediri'],
-                ['id' => 228, 'nama' => 'Kota Madiun'],
-                ['id' => 229, 'nama' => 'Kota Malang'],
-                ['id' => 230, 'nama' => 'Kota Mojokerto'],
-                ['id' => 231, 'nama' => 'Kota Pasuruan'],
-                ['id' => 232, 'nama' => 'Kota Probolinggo'],
-                ['id' => 233, 'nama' => 'Kota Surabaya'],
-                ['id' => 234, 'nama' => 'Kabupaten Bangkalan'],
-                ['id' => 235, 'nama' => 'Kabupaten Banyuwangi'],
-                ['id' => 236, 'nama' => 'Kabupaten Blitar'],
-                ['id' => 237, 'nama' => 'Kabupaten Bojonegoro'],
-                ['id' => 238, 'nama' => 'Kabupaten Bondowoso'],
-                ['id' => 239, 'nama' => 'Kabupaten Gresik'],
-                ['id' => 240, 'nama' => 'Kabupaten Jember'],
-                ['id' => 241, 'nama' => 'Kabupaten Jombang'],
-                ['id' => 242, 'nama' => 'Kabupaten Kediri'],
-                ['id' => 243, 'nama' => 'Kabupaten Lamongan'],
-                ['id' => 244, 'nama' => 'Kabupaten Lumajang'],
-                ['id' => 245, 'nama' => 'Kabupaten Madiun'],
-                ['id' => 246, 'nama' => 'Kabupaten Magetan'],
-                ['id' => 247, 'nama' => 'Kabupaten Malang'],
-                ['id' => 248, 'nama' => 'Kabupaten Mojokerto'],
-                ['id' => 249, 'nama' => 'Kabupaten Nganjuk'],
-                ['id' => 250, 'nama' => 'Kabupaten Ngawi'],
-                ['id' => 251, 'nama' => "Kabupaten Pacitan"],
-                ['id' => 252, 'nama' => "Kabupaten Pasuruan"],
-                ['id' => 253, 'nama' => "Kabupaten Ponorogo"],
-                ['id' => 254, 'nama' => "Kabupaten Probolinggo"],
-                ['id' => 255, 'nama' => "Kabupaten Sampang"],
-                ['id' => 256, 'nama' => "Kabupaten Sidoarjo"],
-                ['id' => 257, 'nama' => "Kabupaten Situbondo"],
-                ['id' => 258, 'nama' => "Kabupaten Sumenep"],
-                ['id' => 259, 'nama' => "Kabupaten Trenggalek"],
-                ['id' => 260, 'nama' => "Kabupaten Tuban"],
-                ['id' => 261, 'nama' => "Kabupaten Tulungagung"],   
+                ['id' => 232, 'nama' => 'Kota Batu'],
+                ['id' => 233, 'nama' => 'Kota Blitar'],
+                ['id' => 234, 'nama' => 'Kota Kediri'],
+                ['id' => 235, 'nama' => 'Kota Madiun'],
+                ['id' => 236, 'nama' => 'Kota Malang'],
+                ['id' => 237, 'nama' => 'Kota Mojokerto'],
+                ['id' => 238, 'nama' => 'Kota Pasuruan'],
+                ['id' => 239, 'nama' => 'Kota Probolinggo'],
+                ['id' => 240, 'nama' => 'Kota Surabaya'],
+                ['id' => 241, 'nama' => 'Kabupaten Bangkalan'],
+                ['id' => 242, 'nama' => 'Kabupaten Banyuwangi'],
+                ['id' => 243, 'nama' => 'Kabupaten Blitar'],
+                ['id' => 244, 'nama' => 'Kabupaten Bojonegoro'],
+                ['id' => 245, 'nama' => 'Kabupaten Bondowoso'],
+                ['id' => 246, 'nama' => 'Kabupaten Gresik'],
+                ['id' => 247, 'nama' => 'Kabupaten Jember'],
+                ['id' => 248, 'nama' => 'Kabupaten Jombang'],
+                ['id' => 249, 'nama' => 'Kabupaten Kediri'],
+                ['id' => 250, 'nama' => 'Kabupaten Lamongan'],
+                ['id' => 251, 'nama' => 'Kabupaten Lumajang'],
+                ['id' => 252, 'nama' => 'Kabupaten Madiun'],
+                ['id' => 253, 'nama' => 'Kabupaten Magetan'],
+                ['id' => 254, 'nama' => 'Kabupaten Malang'],
+                ['id' => 255, 'nama' => 'Kabupaten Mojokerto'],
+                ['id' => 256, 'nama' => 'Kabupaten Nganjuk'],
+                ['id' => 257, 'nama' => 'Kabupaten Ngawi'],
+                ['id' => 258, 'nama' => "Kabupaten Pacitan"],
+                ['id' => 259, 'nama' => "Kabupaten Pasuruan"],
+                ['id' => 260, 'nama' => "Kabupaten Ponorogo"],
+                ['id' => 261, 'nama' => "Kabupaten Probolinggo"],
+                ['id' => 262, 'nama' => "Kabupaten Sampang"],
+                ['id' => 263, 'nama' => "Kabupaten Sidoarjo"],
+                ['id' => 264, 'nama' => "Kabupaten Situbondo"],
+                ['id' => 265, 'nama' => "Kabupaten Sumenep"],
+                ['id' => 266, 'nama' => "Kabupaten Trenggalek"],
+                ['id' => 267, 'nama' => "Kabupaten Tuban"],
+                ['id' => 268, 'nama' => "Kabupaten Tulungagung"],   
             ],
             'DKI Jakarta' => [
-                ['id' => 262, 'nama' => 'Kota Jakarta Pusat'],
-                ['id' => 263, 'nama' => 'Kota Jakarta Utara'],
-                ['id' => 264, 'nama' => 'Kota Jakarta Barat'],
-                ['id' => 265, 'nama' => 'Kota Jakarta Selatan'],
-                ['id' => 266, 'nama' => 'Kota Jakarta Timur'],
+                ['id' => 269, 'nama' => 'Kota Jakarta Pusat'],
+                ['id' => 270, 'nama' => 'Kota Jakarta Utara'],
+                ['id' => 271, 'nama' => 'Kota Jakarta Barat'],
+                ['id' => 272, 'nama' => 'Kota Jakarta Selatan'],
+                ['id' => 273, 'nama' => 'Kota Jakarta Timur'],
             ],
             'Nusa Tenggara Barat' => [
-                ['id' => 267, 'nama' => 'Kota Mataram'],
-                ['id' => 268, 'nama' => 'Kota Bima'],
-                ['id' => 269, 'nama' => 'Kabupaten Bima'],
-                ['id' => 270, 'nama' => 'Kabupaten Dompu'],
-                ['id' => 271, 'nama' => 'Kabupaten Lombok Barat'],
-                ['id' => 272, 'nama' => 'Kabupaten Lombok Tengah'],
-                ['id' => 273, 'nama' => 'Kabupaten Lombok Timur'],
-                ['id' => 274, 'nama' => 'Kabupaten Lombok Utara'],
-                ['id' => 275, 'nama' => 'Kabupaten Sumbawa'],
-                ['id' => 276, 'nama' => 'Kabupaten Sumbawa Barat'],
+                ['id' => 274, 'nama' => 'Kota Mataram'],
+                ['id' => 275, 'nama' => 'Kota Bima'],
+                ['id' => 276, 'nama' => 'Kabupaten Bima'],
+                ['id' => 277, 'nama' => 'Kabupaten Dompu'],
+                ['id' => 278, 'nama' => 'Kabupaten Lombok Barat'],
+                ['id' => 279, 'nama' => 'Kabupaten Lombok Tengah'],
+                ['id' => 280, 'nama' => 'Kabupaten Lombok Timur'],
+                ['id' => 281, 'nama' => 'Kabupaten Lombok Utara'],
+                ['id' => 282, 'nama' => 'Kabupaten Sumbawa'],
+                ['id' => 283, 'nama' => 'Kabupaten Sumbawa Barat'],
             ],
             'Nusa Tenggara Timur' => [
-                ['id' => 277, 'nama' => 'Kota Kupang'],
-                ['id' => 278, 'nama' => 'Kabupaten Alor'],
-                ['id' => 279, 'nama' => 'Kabupaten Belu'],
-                ['id' => 280, 'nama' => 'Kabupaten Ende'],
-                ['id' => 281, 'nama' => 'Kabupaten Flores Timur'],
-                ['id' => 282, 'nama' => 'Kabupaten Kupang'],
-                ['id' => 283, 'nama' => 'Kabupaten Lembata'],
-                ['id' => 284, 'nama' => 'Kabupaten Malaka'],
-                ['id' => 285, 'nama' => 'Kabupaten Manggarai'],
-                ['id' => 286, 'nama' => 'Kabupaten Manggarai Barat'],
-                ['id' => 287, 'nama' => 'Kabupaten Manggarai Timur'],
-                ['id' => 288, 'nama' => 'Kabupaten Ngada'],
-                ['id' => 289, 'nama' => 'Kabupaten Rote Ndao'],
-                ['id' => 290, 'nama' => 'Kabupaten Sabu Raija'],
-                ['id' => 291, 'nama' => 'Kabupaten Sikka'],
-                ['id' => 292, 'nama' => 'Kabupaten Timor Tengah Selatan'],
-                ['id' => 293, 'nama' => 'Kabupaten Timor Tengah Utara'],
+                ['id' => 284, 'nama' => 'Kota Kupang'],
+                ['id' => 285, 'nama' => 'Kabupaten Alor'],
+                ['id' => 286, 'nama' => 'Kabupaten Belu'],
+                ['id' => 287, 'nama' => 'Kabupaten Ende'],
+                ['id' => 288, 'nama' => 'Kabupaten Flores Timur'],
+                ['id' => 289, 'nama' => 'Kabupaten Kupang'],
+                ['id' => 290, 'nama' => 'Kabupaten Lembata'],
+                ['id' => 291, 'nama' => 'Kabupaten Malaka'],
+                ['id' => 292, 'nama' => 'Kabupaten Manggarai'],
+                ['id' => 293, 'nama' => 'Kabupaten Manggarai Barat'],
+                ['id' => 294, 'nama' => 'Kabupaten Manggarai Timur'],
+                ['id' => 295, 'nama' => 'Kabupaten Ngada'],
+                ['id' => 296, 'nama' => 'Kabupaten Rote Ndao'],
+                ['id' => 297, 'nama' => 'Kabupaten Sabu Raija'],
+                ['id' => 298, 'nama' => 'Kabupaten Sikka'],
+                ['id' => 299, 'nama' => 'Kabupaten Timor Tengah Selatan'],
+                ['id' => 300, 'nama' => 'Kabupaten Timor Tengah Utara'],
             ],
             'Kalimantan Barat' => [
                 ['id' => 294, 'nama' => 'Kota Pontianak'],

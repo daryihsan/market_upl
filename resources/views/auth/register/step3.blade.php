@@ -87,7 +87,7 @@
                                    border border-[#d2dfe4] dark:border-gray-700 bg-white h-14 
                                    placeholder:text-text-secondary p-[15px] text-base shadow-sm"
                             placeholder="Masukkan 16 digit nomor KTP Anda"
-                            value="{{ old('nik') }}" />
+                            value="{{ old('nik', $registrationData['nik'] ?? '') }}" />
                         @error('nik')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -120,6 +120,9 @@
                                    border border-[#d2dfe4] dark:border-gray-700 bg-white h-14 
                                    placeholder:text-text-secondary p-[15px] text-base shadow-sm"
                             placeholder="Ulangi kata sandi" />
+                        @error('password_confirmation')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </label>
                 </div>
 
