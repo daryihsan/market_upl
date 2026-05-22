@@ -56,6 +56,23 @@
                 Silahkan masukkan detail Anda
             </p>
 
+            @if (session('success'))
+                <div class="rounded-xl bg-green-50 border border-green-200 text-green-800 px-4 py-3 mb-6">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            {{-- @if ($errors->any())
+                <div class="rounded-xl bg-red-50 border border-red-200 text-red-800 px-4 py-3 mb-6">
+                    <strong class="font-semibold">Terjadi kesalahan:</strong>
+                    <ul class="mt-2 list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif --}}
+
             <!-- Login Form -->
             <form action="{{ route('login.post.login') }}" method="POST" class="space-y-6">
                 @csrf
@@ -69,10 +86,14 @@
                         type="text"
                         name="email_pic"
                         id="email_pic"
+                        value="{{ old('email_pic') }}"
                         placeholder="Masukkan email atau nama toko Anda"
                         required
                         class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-quad-light-blue focus:border-quad-light-blue sm:text-base"
                     >
+                    @error('email_pic')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Password -->
@@ -99,6 +120,9 @@
                             <!-- Tempat ikon show/hide password -->
                         </div>
                     </div>
+                    @error('password')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Login Button -->

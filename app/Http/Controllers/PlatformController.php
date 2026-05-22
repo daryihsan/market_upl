@@ -235,6 +235,7 @@ class PlatformController extends Controller
         // REJECT
         if ($request->action === 'reject') {
             $seller->status_akun = 'rejected';
+            $seller->deactivated_by_admin = true;
             $seller->verification_date = now();
             $seller->save();
 

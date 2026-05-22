@@ -36,20 +36,26 @@ class LoginController extends Controller
                      })
                      ->first();
 
-        if ($user && Auth::attempt([
-            'email_pic' => $user->email_pic, 
-            'password' => $request->password
-        ])) {
-            // cek tambahan status akun
-            if ($user->status_akun === 'active') { 
-                return redirect()->route('seller.dashboard');
-            } else {
-                Auth::logout(); // logout jika akun belum aktif
-                return back()->withErrors(['email_pic' => 'Akun Anda belum aktif. Silakan tunggu verifikasi.']);
-            }
+        if (! $user) {
+            return back()->withErrors(['email_pic' => 'Email atau Nama Toko tidak ditemukan'])->withInput();
         }
 
-        return back()->withErrors(['email_pic' => 'Email/nama toko atau password salah']);
+        if (! Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => 'Password salah'])->withInput();
+        }
+
+        // Jika masih pending, tolak
+        if ($user->status_akun === 'pending') {
+            return back()->withErrors(['email_pic' => 'Akun Anda belum diverifikasi oleh admin. Silakan tunggu verifikasi.'])->withInput();
+        }
+
+        // Jika status 'rejected' dan dinonaktifkan oleh admin -> tolak
+        if ($user->status_akun === 'rejected' && ($user->deactivated_by_admin ?? false)) {
+            return back()->withErrors(['email_pic' => 'Akun Anda dinonaktifkan oleh admin. Hubungi admin untuk bantuan.'])->withInput();
+        }
+
+        Auth::login($user);
+        return redirect()->route('seller.dashboard');
     }
 
     // login admin (menggunakan data dari database yang di-seed)
@@ -70,12 +76,15 @@ class LoginController extends Controller
                      ->where('email_pic', $request->email_pic)
                      ->first();
 
-        if ($admin && Hash::check($request->password, $admin->password)) {
-            Auth::login($admin); 
-            
-            return redirect()->route('platform.dashboard')->with('success','Login admin berhasil!');
+        if (! $admin) {
+            return back()->withErrors(['email_pic' => 'Email Admin tidak ditemukan'])->withInput();
         }
-        // gagal
-        return back()->withErrors(['email_pic' => 'Email atau password Admin salah']);
+
+        if (! Hash::check($request->password, $admin->password)) {
+            return back()->withErrors(['password' => 'Password Admin salah'])->withInput();
+        }
+
+        Auth::login($admin);
+        return redirect()->route('platform.dashboard')->with('success','Login admin berhasil!');
     }
 }

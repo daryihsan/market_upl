@@ -41,6 +41,7 @@ class Seller extends Authenticatable implements MustVerifyEmail
         'email_verified_at', // Wajib untuk middleware 'verified'
         
         'status_akun', 
+        'deactivated_by_admin',
         'verification_date',
     ];
     
@@ -57,6 +58,7 @@ class Seller extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime', // DITAMBAHKAN
             'verification_date' => 'datetime',
             'password' => 'hashed', // DITAMBAHKAN
+            'deactivated_by_admin' => 'boolean',
         ];
     }
 }

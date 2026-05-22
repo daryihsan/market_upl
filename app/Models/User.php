@@ -36,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'activation_token',
         'email_verified_at',
         'status_akun', // DITAMBAHKAN
+        'deactivated_by_admin',
         'verification_date', // DITAMBAHKAN
     ];
 
@@ -60,13 +61,11 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'verification_date' => 'datetime',
+        'deactivated_by_admin' => 'boolean',
+    ];
 
     public function documents()
     {
