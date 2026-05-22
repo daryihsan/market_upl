@@ -112,7 +112,7 @@ if (!$nextCategory || !$nextCategory->icon_path) {
             
             {{-- Tampilkan maksimal 6 kategori teratas secara dinamis --}}
             @foreach($visibleCategories as $category)
-            <a href="{{ route('katalog', ['kategori' => $category->name]) }}" class="category-card flex flex-col items-center text-center p-2 sm:p-3 hover:shadow-xl rounded-lg">
+            <a href="{{ route('catalog.byCategory', $category->slug) }}" class="category-card flex flex-col items-center text-center p-2 sm:p-3 hover:shadow-xl rounded-lg">
                 {{-- Menggunakan icon_path dari DB --}}
                 <img src="{{ $category->icon_path ?? asset('assets/images/kategori-placeholder.jpg') }}" 
                     alt="{{ $category->name }}" 
