@@ -427,9 +427,15 @@ $summaryData = [
             <section id="products-content" @if($activeTab !== 'products') style="display: none;" @endif>
                 <div class="product-toolbar flex justify-between items-center mb-6">
                     <input type="text" placeholder="Cari Produk" class="p-2 border border-gray-300 rounded-lg w-1/3 focus:ring-blue-500 focus:border-blue-500" oninput="filterProducts(this.value)">
-                    <a href="{{ route('seller.dashboard', ['tab' => 'addProduct']) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition">
-                        <i class="fas fa-plus mr-2"></i> Tambah Produk
-                    </a>
+                    @if ($user->status_akun === 'active')
+                        <a href="{{ route('seller.dashboard', ['tab' => 'addProduct']) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition">
+                            <i class="fas fa-plus mr-2"></i> Tambah Produk
+                        </a>
+                    @else
+                        <button type="button" disabled class="bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg cursor-not-allowed">
+                            <i class="fas fa-plus mr-2"></i> Tambah Produk
+                        </button>
+                    @endif
                 </div>
 
                 <div class="grid grid-cols-4 gap-6 mb-8">
@@ -516,10 +522,15 @@ $summaryData = [
                         <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar Produk
                     </a>
 
-                    <form id="add-product-form"
-                        action="{{ $editMode ? route('seller.products.update', $editProduct->id) : route('seller.products.store') }}"
-                        method="POST"
-                        enctype="multipart/form-data">
+                    @if ($user->status_akun !== 'active')
+                        <div class="bg-yellow-50 border border-yellow-300 text-yellow-700 p-5 rounded-lg mb-6">
+                            Akun Anda saat ini tidak aktif. Anda tetap dapat masuk, tetapi tidak diperbolehkan menambahkan atau mengubah produk sampai akun diaktifkan kembali.
+                        </div>
+                    @else
+                        <form id="add-product-form"
+                            action="{{ $editMode ? route('seller.products.update', $editProduct->id) : route('seller.products.store') }}"
+                            method="POST"
+                            enctype="multipart/form-data">
                         @csrf
                         @if ($editMode)
                             @method('PUT')
@@ -640,6 +651,7 @@ $summaryData = [
                             </button>
                         </div>
                     </form>
+                    @endif
                 </div>
             </section>
         </main>

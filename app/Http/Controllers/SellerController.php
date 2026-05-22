@@ -159,7 +159,12 @@ class SellerController extends Controller
      */
     public function storeProduct(Request $request)
     {
-        $userId = Auth::id(); 
+        $user = Auth::user();
+        if ($user->status_akun !== 'active') {
+            return Redirect::back()->with('error', 'Akun Anda saat ini tidak aktif. Anda tidak dapat menambahkan produk.');
+        }
+
+        $userId = $user->id; 
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -188,8 +193,8 @@ class SellerController extends Controller
         $productData['total_ulasan'] = 0;
         
         if ($request->hasFile('foto_produk')) {
-            $fotoPath = $request->file('foto_produk')->store('product_images', 'public');
-            $productData['image_path'] = Storage::disk('public')->url($fotoPath);
+            $fotoPath = $request->file('foto_produk')->store('public/product_images'); 
+            $productData['image_path'] = Storage::url($fotoPath);
         }
 
         unset($productData['foto_produk'], $productData['status_override']); 
@@ -217,7 +222,12 @@ class SellerController extends Controller
      */
     public function updateProduct(Request $request, Product $product)
     {
-        $userId = Auth::id();
+        $user = Auth::user();
+        if ($user->status_akun !== 'active') {
+            return Redirect::back()->with('error', 'Akun Anda saat ini tidak aktif. Anda tidak dapat mengedit produk.');
+        }
+
+        $userId = $user->id;
         if ($product->user_id !== $userId) {
             return Redirect::back()->with('error', 'Anda tidak berhak mengedit produk ini.');
         }
@@ -246,11 +256,11 @@ class SellerController extends Controller
         
         if ($request->hasFile('foto_produk')) {
             if ($product->image_path) {
-                $oldPath = str_replace('/storage/', '', $product->image_path);
-                Storage::disk('public')->delete($oldPath);
+                $path = str_replace(config('app.url') . '/storage', 'public', $product->image_path);
+                Storage::delete($path);
             }
-            $fotoPath = $request->file('foto_produk')->store('product_images', 'public');
-            $productData['image_path'] = Storage::disk('public')->url($fotoPath);
+            $fotoPath = $request->file('foto_produk')->store('public/product_images');
+            $productData['image_path'] = Storage::url($fotoPath);
         }
 
         unset($productData['foto_produk'], $productData['status_override']); 
@@ -277,7 +287,12 @@ class SellerController extends Controller
     
     public function deleteProduct(Product $product)
     {
-        $userId = Auth::id();
+        $user = Auth::user();
+        if ($user->status_akun !== 'active') {
+            return Redirect::back()->with('error', 'Akun Anda saat ini tidak aktif. Anda tidak dapat menghapus produk.');
+        }
+
+        $userId = $user->id;
         if ($product->user_id !== $userId) {
             return Redirect::back()->with('error', 'Anda tidak berhak menghapus produk ini.');
         }
@@ -287,8 +302,8 @@ class SellerController extends Controller
         }
         
         if ($product->image_path) {
-            $oldPath = str_replace('/storage/', '', $product->image_path);
-            Storage::disk('public')->delete($oldPath);
+            $path = str_replace(config('app.url') . '/storage', 'public', $product->image_path);
+            Storage::delete($path);
         }
 
         $product->delete();
