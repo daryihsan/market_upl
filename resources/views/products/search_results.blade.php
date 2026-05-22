@@ -75,46 +75,157 @@
         </div>
 
         {{-- FILTER SECTION --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-white p-4 rounded-lg shadow">
-            <form action="{{ route('search') }}" method="GET" class="flex flex-col gap-4">
+        <div class="mb-6 bg-white p-4 rounded-lg shadow">
+            <form id="filterForm" action="{{ route('search') }}" method="GET">
                 <input type="hidden" name="q" value="{{ $q }}">
+                <input type="hidden" name="toko" id="filter_toko" value="{{ $toko }}">
+                <input type="hidden" name="kategori" id="filter_kategori" value="{{ $kategori }}">
+                <input type="hidden" name="provinsi" id="filter_provinsi" value="{{ $provinsi }}">
+                <input type="hidden" name="kabupaten" id="filter_kabupaten" value="{{ $kabupaten }}">
                 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter Provinsi</label>
-                    <select name="provinsi" class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 focus:ring-blue-600 focus:border-blue-600" onchange="this.form.submit()">
-                        <option value="">-- Semua Provinsi --</option>
-                        @foreach ($allProvinsi as $prov)
-                            <option value="{{ $prov }}" {{ $provinsi === $prov ? 'selected' : '' }}>
-                                {{ $prov }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {{-- Search Shop Name --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cari Nama Toko</label>
+                        <div class="flex gap-2">
+                            <input
+                                type="text"
+                                id="search_toko"
+                                placeholder="Nama toko..."
+                                class="flex-1 border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 focus:ring-blue-600 focus:border-blue-600"
+                                value="{{ $toko }}"
+                            >
+                            <button
+                                type="button"
+                                onclick="searchShop()"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                            >
+                                Cari
+                            </button>
+                        </div>
+                    </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter Kabupaten/Kota</label>
-                    <select name="kabupaten" class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 focus:ring-blue-600 focus:border-blue-600" onchange="this.form.submit()">
-                        <option value="">-- Semua Kabupaten/Kota --</option>
-                        @foreach ($allKabupaten as $kab)
-                            <option value="{{ $kab }}" {{ $kabupaten === $kab ? 'selected' : '' }}>
-                                {{ $kab }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                    {{-- Filter Category --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Kategori</label>
+                        <select
+                            id="select_kategori"
+                            class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 focus:ring-blue-600 focus:border-blue-600"
+                            onchange="filterSearch()"
+                        >
+                            <option value="">-- Semua Kategori --</option>
+                            @foreach ($allCategories as $cat)
+                                <option value="{{ $cat->id }}" {{ $kategori == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                @if ($provinsi !== '' || $kabupaten !== '')
-                    <a href="{{ route('search', ['q' => $q]) }}" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">
-                        ✕ Hapus Filter
-                    </a>
-                @endif
+                    {{-- Filter Province --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Provinsi</label>
+                        <select
+                            id="select_provinsi"
+                            class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 focus:ring-blue-600 focus:border-blue-600"
+                            onchange="filterSearch()"
+                        >
+                            <option value="">-- Semua Provinsi --</option>
+                            @foreach ($allProvinsi as $prov)
+                                <option value="{{ $prov }}" {{ $provinsi === $prov ? 'selected' : '' }}>
+                                    {{ $prov }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Filter City/Regency --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Kabupaten/Kota</label>
+                        <select
+                            id="select_kabupaten"
+                            class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 focus:ring-blue-600 focus:border-blue-600"
+                            onchange="filterSearch()"
+                        >
+                            <option value="">-- Semua Kabupaten/Kota --</option>
+                            @foreach ($allKabupaten as $kab)
+                                <option value="{{ $kab }}" {{ $kabupaten === $kab ? 'selected' : '' }}>
+                                    {{ $kab }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Clear Filters Button --}}
+                    @if ($provinsi !== '' || $kabupaten !== '' || $kategori !== '' || $toko !== '')
+                        <div class="flex items-end">
+                            <button
+                                type="button"
+                                onclick="clearFilters()"
+                                class="w-full bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg text-sm font-medium"
+                            >
+                                ✕ Hapus Semua Filter
+                            </button>
+                        </div>
+                    @endif
+                </div>
             </form>
         </div>
+
+        <script>
+            function filterSearch() {
+                document.getElementById('filter_toko').value = document.getElementById('search_toko').value;
+                document.getElementById('filter_kategori').value = document.getElementById('select_kategori').value;
+                document.getElementById('filter_provinsi').value = document.getElementById('select_provinsi').value;
+                document.getElementById('filter_kabupaten').value = document.getElementById('select_kabupaten').value;
+                document.getElementById('filterForm').submit();
+            }
+
+            function searchShop() {
+                document.getElementById('filter_toko').value = document.getElementById('search_toko').value;
+                document.getElementById('filter_kategori').value = document.getElementById('select_kategori').value;
+                document.getElementById('filter_provinsi').value = document.getElementById('select_provinsi').value;
+                document.getElementById('filter_kabupaten').value = document.getElementById('select_kabupaten').value;
+                document.getElementById('filterForm').submit();
+            }
+
+            function clearFilters() {
+                document.getElementById('search_toko').value = '';
+                document.getElementById('select_kategori').value = '';
+                document.getElementById('select_provinsi').value = '';
+                document.getElementById('select_kabupaten').value = '';
+                document.getElementById('filter_toko').value = '';
+                document.getElementById('filter_kategori').value = '';
+                document.getElementById('filter_provinsi').value = '';
+                document.getElementById('filter_kabupaten').value = '';
+                document.getElementById('filterForm').submit();
+            }
+        </script>
+
+        {{-- HASIL PENCARIAN ATAU PESAN TIDAK DITEMUKAN --}}
         @if ($products->count() === 0)
-            <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                Tidak ada produk yang cocok dengan pencarian kamu.
+            <div class="bg-white rounded-lg shadow p-12 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak Ada Hasil Pencarian</h3>
+                <p class="text-gray-500 mb-4">
+                    @if ($q !== '' || $toko !== '')
+                        Tidak ada produk atau toko yang cocok dengan kriteria pencarian Anda.
+                    @elseif ($kategori !== '')
+                        Tidak ada produk di kategori yang Anda pilih.
+                    @elseif ($provinsi !== '' || $kabupaten !== '')
+                        Tidak ada produk yang tersedia di lokasi yang Anda pilih.
+                    @else
+                        Silakan coba dengan kriteria pencarian yang berbeda.
+                    @endif
+                </p>
+                <a href="{{ route('search') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold">
+                    ← Kembali ke Pencarian
+                </a>
             </div>
         @else
+            {{-- GRID PRODUK --}}
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
                 @foreach ($products as $product)
                     <a href="{{ route('product.detail', ['id' => $product->id]) }}"

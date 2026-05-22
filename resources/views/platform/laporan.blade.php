@@ -169,15 +169,13 @@
                                 <select name="status"
                                     class="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[160px]">
 
-                                    <option value="semua" {{ $statusFilter ===
-                'semua' ? 'selected' : '' }}>Semua Status</option>
+                                    <option value="semua" {{ $statusFilter === 'semua' ? 'selected' : '' }}>Semua Status</option>
 
-                                    <option value="aktif" {{ $statusFilter ===
-                'aktif' ? 'selected' : '' }}>Aktif</option>
+                                    <option value="aktif" {{ $statusFilter === 'aktif' ? 'selected' : '' }}>Aktif</option>
 
-                                    <option value="tidak_aktif" {{ $statusFilter ===
-                'tidak_aktif' or $statusFilter === 'pending' ? 'selected' : '' }}>Tidak
-                                        Aktif</option>
+                                    <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>Pending</option>
+
+                                    <option value="tidak_aktif" {{ $statusFilter === 'tidak_aktif' ? 'selected' : '' }}>Tidak Aktif</option>
                                 </select>
 
                                 <button type="submit"
@@ -241,15 +239,20 @@
 
                                             <td class="px-6 py-4">
                                                 @php
-                                                    $isActive = $seller->status_akun === 'active';
+                                                    $status = $seller->status_akun;
+                                                    if ($status === 'active') {
+                                                        $badgeClass = 'bg-green-100 text-green-700';
+                                                        $label = 'Aktif';
+                                                    } elseif ($status === 'pending') {
+                                                        $badgeClass = 'bg-yellow-100 text-yellow-800';
+                                                        $label = 'Pending';
+                                                    } else {
+                                                        $badgeClass = 'bg-red-100 text-red-700';
+                                                        $label = 'Nonaktif';
+                                                    }
                                                 @endphp
-                                                <span
-                                                    class="px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap inline-block
-                                                                                            {{ $isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                                    <span
-                                                        class="{{ $isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                                        {{ $seller->status_akun === 'active' ? 'Aktif' : 'Tidak Aktif' }}
-                                                    </span>
+                                                <span class="px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap inline-block {{ $badgeClass }}">
+                                                    {{ $label }}
                                                 </span>
                                             </td>
 

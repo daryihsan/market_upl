@@ -10,7 +10,7 @@ class CatalogController extends Controller
     // homepage
     public function home()
     {
-        // mengambil 5 produk dengan total ulasan terbanyak dan relasi user (hanya dari penjual approved)
+        // mengambil 5 produk dengan total ulasan terbanyak dan relasi user (hanya dari penjual active)
         $trendingProducts = Product::with('user')
             ->whereHas('user', function ($userQuery) {
                 $userQuery->where('status_akun', 'active');
@@ -31,11 +31,11 @@ class CatalogController extends Controller
         $rating = $request->get('rating');
 
         // ambil query dasar + relasi user (lokasi dan nama toko)
-        // FILTER: Hanya tampilkan produk dari penjual yang status_akun = 'approved'
+        // FILTER: Hanya tampilkan produk dari penjual yang status_akun = 'active'
         $query = Product::query()
             ->with('user')
             ->whereHas('user', function ($userQuery) {
-                $userQuery->where('status_akun', 'approved');
+                $userQuery->where('status_akun', 'active');
             });
 
         // kategori
@@ -92,7 +92,7 @@ class CatalogController extends Controller
         // total produk sesuai filter
         $totalQuery = Product::query()
             ->whereHas('user', function ($userQuery) {
-                $userQuery->where('status_akun', 'approved');
+                $userQuery->where('status_akun', 'active');
             });
 
         if ($categoryInput) {
@@ -123,12 +123,32 @@ class CatalogController extends Controller
         // kategori untuk sidebar
         $categories = Category::orderBy('name')->get();
 
+        // lokasi dari penjual yang active
+        $locations = Product::select('users.kabupaten')
+            ->join('users', 'products.user_id', '=', 'users.id')
+            ->where('users.status_akun', 'active')
+            ->distinct()
+            ->pluck('users.kabupaten')
+            ->sort()
+            ->values();
+
+        // harga min-max dari produk active
+        $priceStats = Product::whereHas('user', function ($userQuery) {
+            $userQuery->where('status_akun', 'active');
+        })->selectRaw('MIN(price) as min_price, MAX(price) as max_price')->first();
+
+        $minPriceDb = $priceStats->min_price ?? 0;
+        $maxPriceDb = $priceStats->max_price ?? 50000000;
+
         return view('katalog', [
             'products' => $products,
             'totalProducts' => $totalProducts,
             'currentCategory' => $categoryModel ? $categoryModel->name : ($categoryInput ?: 'Semua Produk'),
             'filters' => $request->all(),
             'categories' => $categories,
+            'locations' => $locations,
+            'minPriceDb' => $minPriceDb,
+            'maxPriceDb' => $maxPriceDb,
         ]);
     }
 

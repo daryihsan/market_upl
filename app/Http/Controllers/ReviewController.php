@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Review; // Asumsikan Model Review sudah dibuat
 use App\Mail\ThankYouMail; // Asumsikan Mail Class sudah dibuat
 use Illuminate\Support\Facades\Mail; // Import Mail Facade
+use Illuminate\Support\Facades\Cache; // Cache for invalidation
 
 class ReviewController extends Controller
 {
@@ -46,6 +47,8 @@ class ReviewController extends Controller
         $product->rating = round($averageRating, 1); // Bulatkan ke 1 desimal
         $product->total_ulasan = $totalReviews;
         $product->save();
+        // Invalidate cached rating stats so product page shows fresh numbers
+        Cache::forget('product_rating_stats_' . $product->id);
         
         // 4. Kirim Notifikasi Ucapan Terima Kasih via Email (SRS-MartPlace-06)
         Mail::to($validated['emailAddress'])->send(new ThankYouMail(

@@ -34,11 +34,7 @@ Route::get('/', [CatalogController::class, 'home'])->name('home'); // DIPERBARUI
 Route::get('/katalog', [CatalogController::class, 'index'])->name('katalog');
 
 // detail produk
-Route::get('/product/{id}/detail', function ($id) {
-    // TAMBAH 'reviews' ke eager load
-    $product = App\Models\Product::with(['user', 'category', 'reviews'])->findOrFail($id); 
-    return view('products.detail', compact('product'));
-})->name('product.detail');
+Route::get('/product/{id}/detail', [ProductController::class, 'show'])->name('product.detail');
 
 // ulasan produk
 Route::post('/product/{product}/review', [ReviewController::class, 'store'])->name('review.store');
@@ -132,6 +128,13 @@ Route::prefix('platform')->name('platform.')->group(function () {
 
     Route::post('/verifikasi/{id}/process', [PlatformController::class, 'processVerification'])
         ->name('verifikasi.process');
+
+    // MANAJEMEN PENJUAL (ACTIVATE/DEACTIVATE)
+    Route::get('/sellers', [PlatformController::class, 'sellerManagementList'])
+        ->name('sellers.list');
+
+    Route::post('/sellers/{id}/toggle-status', [PlatformController::class, 'toggleSellerStatus'])
+        ->name('sellers.toggle');
 
     // ==============================
     // LAPORAN

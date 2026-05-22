@@ -169,6 +169,7 @@ class PlatformController extends Controller
         // Mengirim semua data ke view
         return view('platform.dashboard', [
             'total_penjual_aktif' => $total_penjual_aktif,
+            'total_penjual_pending' => $pending_count,
             'total_penjual_tidak_aktif' => $total_penjual_tidak_aktif,
             'category_labels' => $category_labels,
             'category_counts' => $category_counts,
@@ -249,6 +250,44 @@ class PlatformController extends Controller
         }
     }
 
+    // =======================
+    // 4. MANAGE SELLER (ACTIVATE/DEACTIVATE)
+    // =======================
+    public function sellerManagementList()
+    {
+        $sellers = User::where('status_akun', '!=', 'pending')
+            ->where('role', '!=', 'admin')
+            ->orderBy('status_akun', 'desc')
+            ->orderBy('nama_toko')
+            ->paginate(15);
+
+        return view('platform.seller_management', compact('sellers'));
+    }
+
+    public function toggleSellerStatus(Request $request, $id)
+    {
+        $seller = User::findOrFail($id);
+
+        if ($seller->role === 'admin') {
+            return redirect()->back()->with('error', 'Tidak dapat mengubah status admin.');
+        }
+
+        // Toggle status antara active dan inactive (rejected)
+        if ($seller->status_akun === 'active') {
+            $seller->status_akun = 'rejected';
+            $message = "Penjual {$seller->nama_toko} berhasil dinonaktifkan.";
+        } else if ($seller->status_akun === 'rejected') {
+            $seller->status_akun = 'active';
+            $message = "Penjual {$seller->nama_toko} berhasil diaktifkan kembali.";
+        } else {
+            return redirect()->back()->with('error', 'Status penjual tidak dapat diubah.');
+        }
+
+        $seller->save();
+
+        return redirect()->back()->with('success', $message);
+    }
+
     // 5. HALAMAN LAPORAN UTAMA (reportIndex)
     public function reportIndex(Request $request)
     {
@@ -265,14 +304,17 @@ class PlatformController extends Controller
                 $statusFilter = $request->query('status', 'semua');
                 $query = User::whereNotNull('nama_toko');
 
+                // Support explicit pending, active, and rejected filters
                 if ($statusFilter === 'aktif') {
                     $query->where('status_akun', 'active');
+                } elseif ($statusFilter === 'pending') {
+                    $query->where('status_akun', 'pending');
                 } elseif ($statusFilter === 'tidak_aktif') {
-                    $query->whereIn('status_akun', ['rejected', 'pending']);
+                    $query->where('status_akun', 'rejected');
                 }
 
-                // Urutkan sesuai kebutuhan screenshot (aktif dulu baru tidak aktif)
-                $sellers = $query->orderBy(DB::raw("CASE WHEN status_akun = 'active' THEN 0 ELSE 1 END"))
+                // Order: active (0), pending (1), rejected (2)
+                $sellers = $query->orderBy(DB::raw("CASE WHEN status_akun = 'active' THEN 0 WHEN status_akun = 'pending' THEN 1 ELSE 2 END"))
                     ->orderBy('created_at', 'asc')
                     ->get();
 

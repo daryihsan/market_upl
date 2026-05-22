@@ -92,9 +92,6 @@
                     <div>
                         <h3 class="font-semibold text-gray-700 mb-3">Kategori</h3>
                         <div class="space-y-2 text-sm text-gray-600">
-                            @php
-                                $categories = \App\Models\Category::all(); 
-                            @endphp
                             @foreach ($categories as $cat)
                                 <label class="flex items-center space-x-2">
                                     <input type="radio" name="kategori" value="{{ $cat->id }}"
@@ -103,18 +100,11 @@
                                     <span>{{ $cat->name }}</span>
                                 </label>
                             @endforeach
-
                         </div>
                     </div>
                     <div class="pt-4 border-t border-gray-200">
                         <h3 class="font-semibold text-gray-700 mb-3">Lokasi</h3>
                         <div class="space-y-2 text-sm text-gray-600">
-                            @php
-                                $locations = \App\Models\User::select('kabupaten')
-                                    ->whereNotNull('kabupaten')
-                                    ->distinct()
-                                    ->pluck('kabupaten');
-                            @endphp
                             @foreach ($locations as $loc)
                                 <label class="flex items-center space-x-2">
                                     <input type="checkbox" name="lokasi[]" value="{{ $loc }}"
@@ -131,21 +121,64 @@
                         <div class="flex space-x-2 text-xs">
                             <input type="number" name="harga_min" placeholder="Harga Minimum" 
                                 value="{{ $filters['harga_min'] ?? 0 }}"
+                                min="{{ $minPriceDb }}"
+                                max="{{ $maxPriceDb }}"
                                 class="w-1/2 border border-gray-300 rounded-lg p-2 text-gray-700 text-center focus:ring-blue-600 focus:border-blue-600">
                             <input type="number" name="harga_max" placeholder="Harga Maksimum" 
-                                value="{{ $filters['harga_max'] ?? 50000000 }}"
+                                value="{{ $filters['harga_max'] ?? $maxPriceDb }}"
+                                min="{{ $minPriceDb }}"
+                                max="{{ $maxPriceDb }}"
                                 class="w-1/2 border border-gray-300 rounded-lg p-2 text-gray-700 text-center focus:ring-blue-600 focus:border-blue-600">
                         </div>
+                        <p class="text-xs text-gray-400 mt-2">
+                            Range: Rp {{ number_format($minPriceDb, 0, ',', '.') }} - Rp {{ number_format($maxPriceDb, 0, ',', '.') }}
+                        </p>
                     </div>
                     <div class="pt-4 border-t border-gray-200">
                         <h3 class="font-semibold text-gray-700 mb-3">Rating</h3>
-                        <label class="flex items-center space-x-2 text-sm text-gray-600">
-                            <input type="checkbox" name="rating" value="4" 
-                                {{ ($filters['rating'] ?? '') == 4 ? 'checked' : '' }}
-                                class="form-checkbox text-blue-600 rounded">
-                            <span class="text-yellow-500"> ⭐ </span>
-                            <span>4 ke atas</span>
-                        </label>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="rating" value="" 
+                                    {{ ($filters['rating'] ?? '') == '' ? 'checked' : '' }}
+                                    class="form-radio text-blue-600 rounded">
+                                <span>Semua Rating</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="rating" value="1" 
+                                    {{ ($filters['rating'] ?? '') == '1' ? 'checked' : '' }}
+                                    class="form-radio text-blue-600 rounded">
+                                <span class="text-yellow-500">⭐</span>
+                                <span>1 ke atas</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="rating" value="2" 
+                                    {{ ($filters['rating'] ?? '') == '2' ? 'checked' : '' }}
+                                    class="form-radio text-blue-600 rounded">
+                                <span class="text-yellow-500">⭐⭐</span>
+                                <span>2 ke atas</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="rating" value="3" 
+                                    {{ ($filters['rating'] ?? '') == '3' ? 'checked' : '' }}
+                                    class="form-radio text-blue-600 rounded">
+                                <span class="text-yellow-500">⭐⭐⭐</span>
+                                <span>3 ke atas</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="rating" value="4" 
+                                    {{ ($filters['rating'] ?? '') == '4' ? 'checked' : '' }}
+                                    class="form-radio text-blue-600 rounded">
+                                <span class="text-yellow-500">⭐⭐⭐⭐</span>
+                                <span>4 ke atas</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="rating" value="5" 
+                                    {{ ($filters['rating'] ?? '') == '5' ? 'checked' : '' }}
+                                    class="form-radio text-blue-600 rounded">
+                                <span class="text-yellow-500">⭐⭐⭐⭐⭐</span>
+                                <span>5 Bintang</span>
+                            </label>
+                        </div>
                     </div>
                     <div class="pt-6 space-y-3">
                         <button type="submit"

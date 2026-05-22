@@ -35,8 +35,14 @@
         // Gambar utama
         $mainImageUrl = $product->image_path; 
         $fallbackUrl = asset('assets/images/placeholder.png');
-        // Rating
-        $rating = $product->rating ?? 0;
+        // Prefer controller-passed values; otherwise compute locally
+        $reviews = $reviews ?? $product->reviews;
+        $totalReviews = $totalReviews ?? $reviews->count();
+        $rating = $rating ?? ($product->rating ?? ($totalReviews > 0 ? round($reviews->avg('rating'), 1) : 0));
+        // For visual stars, round to nearest 0.5 for display
+        $displayRating = round($rating * 2) / 2;
+        $starCounts = $starCounts ?? null;
+        $starPercentages = $starPercentages ?? null;
     @endphp
 
     {{-- BREADCRUMB DINAMIS --}}
@@ -116,27 +122,44 @@
                                     {{-- RATING RATA-RATA DINAMIS --}}
                                     <div class="text-5xl font-bold text-gray-800">{{ number_format($rating, 1) }}</div>
                                     <div class="text-gray-600">/ 5.0</div>
-                                    <div class="flex justify-center mt-2 text-yellow-400">
-                                        {{-- Visual Rating Dinamis --}}
+                                    <div class="flex justify-center mt-2">
+                                        {{-- Visual Rating Dinamis (half-star aware) --}}
                                         @for ($i = 1; $i <= 5; $i++)
-                                            <i class="fas fa-star" style="{{ $i > $rating && $i - 1 < $rating ? 'opacity: 0.5;' : '' }}"></i>
+                                            @php
+                                                if ($displayRating >= $i) {
+                                                    $class = 'fas fa-star text-yellow-400';
+                                                } elseif ($displayRating >= $i - 0.5) {
+                                                    $class = 'fas fa-star-half-alt text-yellow-400';
+                                                } else {
+                                                    $class = 'far fa-star text-gray-300';
+                                                }
+                                            @endphp
+                                            <i class="{{ $class }} mx-0.5"></i>
                                         @endfor
                                     </div>
                                     {{-- TOTAL ULASAN DINAMIS --}}
-                                    <div class="text-sm text-gray-600 mt-1">dari {{ number_format($product->total_ulasan ?? 0) }} ulasan</div>
+                                    <div class="text-sm text-gray-600 mt-1">dari {{ number_format($product->total_ulasan ?? $totalReviews) }} ulasan</div>
                                 </div>
                                 <div class="flex-1 w-full">
-                                    {{-- Star Ratings Progress Bars (STATIS/DUMMY) --}}
-                                    @foreach ([5 => 147, 4 => 4, 3 => 2, 2 => 0, 1 => 0] as $star => $count)
+                                    {{-- Star Ratings Progress Bars (DINAMIS, prefer controller stats) --}}
+                                    @for ($star = 5; $star >= 1; $star--)
+                                        @php
+                                            if (!is_null($starCounts) && isset($starCounts[$star])) {
+                                                $count = $starCounts[$star];
+                                                $percentage = $starPercentages[$star] ?? ($totalReviews > 0 ? ($count / $totalReviews) * 100 : 0);
+                                            } else {
+                                                $count = $reviews->where('rating', $star)->count();
+                                                $percentage = $totalReviews > 0 ? ($count / $totalReviews) * 100 : 0;
+                                            }
+                                        @endphp
                                         <div class="flex items-center space-x-2 mb-2">
                                             <span class="text-xs w-4 text-gray-700">{{ $star }}</span>
                                             <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
-                                                <div class="bg-yellow-400 h-2 rounded-full"
-                                                    style="width: {{ [5=>96,4=>80,3=>40,2=>10,1=>5][$star] ?? 20 }}%"></div>
+                                                <div class="bg-yellow-400 h-2 rounded-full" style="width: {{ round($percentage, 1) }}%"></div>
                                             </div>
                                             <span class="text-xs w-10 text-right text-gray-700">{{ $count }}</span>
                                         </div>
-                                    @endforeach
+                                    @endfor
                                 </div>
                                 {{-- TOMBOL TRIGGER MODAL 1 --}}
                                 <button id="openReviewModal" class="border-2 border-blue-600 text-blue-600 px-6 py-2 rounded-lg hover:bg-blue-50 text-sm font-medium">
@@ -154,13 +177,22 @@
                                 <div class="flex items-center mt-2">
                                     <span class="text-3xl font-bold mr-2">{{ number_format($rating, 1) }}</span>
                                     <span class="text-gray-600">/ 5.0</span>
-                                    <div class="flex text-yellow-400 ml-2">
-                                        {{-- Visual Rating Dinamis --}}
+                                    <div class="flex ml-2">
+                                        {{-- Visual Rating Dinamis (half-star aware) --}}
                                         @for ($i = 1; $i <= 5; $i++)
-                                            <i class="fas fa-star" style="{{ $i > $rating && $i - 1 < $rating ? 'opacity: 0.5;' : '' }}"></i>
+                                            @php
+                                                if ($displayRating >= $i) {
+                                                    $class = 'fas fa-star text-yellow-400';
+                                                } elseif ($displayRating >= $i - 0.5) {
+                                                    $class = 'fas fa-star-half-alt text-yellow-400';
+                                                } else {
+                                                    $class = 'far fa-star text-gray-300';
+                                                }
+                                            @endphp
+                                            <i class="{{ $class }} mr-1"></i>
                                         @endfor
                                     </div>
-                                    <span class="text-sm text-gray-600 ml-2">({{ number_format($product->total_ulasan ?? 0) }} ulasan)</span>
+                                    <span class="text-sm text-gray-600 ml-2">({{ number_format($product->total_ulasan ?? $totalReviews) }} ulasan)</span>
                                 </div>
                             </div>
                             {{-- TOMBOL TRIGGER MODAL 2 --}}
@@ -214,7 +246,7 @@
                             @endfor
                         </div>
                         <span class="font-semibold mr-1 text-sm">{{ number_format($rating, 1) }}</span>
-                        <span class="text-sm text-blue-600 cursor-pointer hover:underline">({{ number_format($product->total_ulasan ?? 0) }} Ulasan)</span>
+                        <span class="text-sm text-blue-600 cursor-pointer hover:underline">({{ number_format($product->total_ulasan ?? $totalReviews) }} Ulasan)</span>
                     </div>
 
                     {{-- HARGA DINAMIS --}}

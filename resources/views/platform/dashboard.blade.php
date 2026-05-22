@@ -131,7 +131,7 @@
                 <div class="card lg:col-span-1">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-semibold text-slate-900">Status Penjual</h3>
-                        <span class="small-muted">Aktif / Tidak Aktif</span>
+                        <span class="small-muted">Aktif / Pending / Tidak Aktif</span>
                     </div>
 
                     <div class="flex items-center gap-6">
@@ -148,6 +148,20 @@
                                             <div class="text-sm text-gray-600">Aktif</div>
                                             <div class="text-xl font-bold text-slate-900">
                                                 {{ number_format($total_penjual_aktif) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-3 h-3 rounded-full" style="background:#f59e0b;"></span>
+                                        <div>
+                                            <div class="text-sm text-gray-600">Pending</div>
+                                            <div class="text-xl font-bold text-slate-900">
+                                                {{ number_format($total_penjual_pending ?? 0) }}
                                             </div>
                                         </div>
                                     </div>
@@ -289,6 +303,7 @@
     <script>
         const sellerData = {
             active: {{ json_encode($total_penjual_aktif) }},
+            pending: {{ json_encode($total_penjual_pending ?? 0) }},
             inactive: {{ json_encode($total_penjual_tidak_aktif) }}
         };
 
@@ -310,10 +325,10 @@
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Aktif', 'Tidak Aktif'],
+                    labels: ['Aktif', 'Pending', 'Tidak Aktif'],
                     datasets: [{
-                        data: [sellerData.active, sellerData.inactive],
-                        backgroundColor: ['#16a34a', '#ef4444'],
+                        data: [sellerData.active, sellerData.pending, sellerData.inactive],
+                        backgroundColor: ['#16a34a', '#f59e0b', '#ef4444'],
                         borderWidth: 0
                     }]
                 },

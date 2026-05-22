@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -14,9 +15,9 @@ class ProductController extends Controller
      */
     public function create()
     {
-        // Check if seller is approved
+        // Check if seller is active
         $seller = Auth::user();
-        if ($seller->status_akun !== 'approved') {
+        if ($seller->status_akun !== 'active') {
             return redirect()->back()
                 ->with('error', 'Akun Anda belum disetujui. Hanya penjual yang terverifikasi dapat menambah produk.');
         }
@@ -30,9 +31,9 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // Check if seller is approved
+        // Check if seller is active
         $seller = Auth::user();
-        if ($seller->status_akun !== 'approved') {
+        if ($seller->status_akun !== 'active') {
             return redirect()->back()
                 ->with('error', 'Akun Anda belum disetujui. Hanya penjual yang terverifikasi dapat menambah produk.');
         }
@@ -142,5 +143,43 @@ class ProductController extends Controller
 
         return redirect()->route('seller.dashboard', ['tab' => 'products'])
                          ->with('success', 'Produk berhasil dihapus.');
+    }
+
+    /**
+     * Show product detail with computed rating stats (cached).
+     */
+    public function show($id)
+    {
+        // Eager-load basic relations and reviews collection (for local aggregation)
+        $product = Product::with(['user', 'category', 'reviews'])->findOrFail($id);
+
+        $cacheKey = 'product_rating_stats_' . $product->id;
+
+        $stats = Cache::remember($cacheKey, 300, function () use ($product) {
+            $totalReviews = $product->reviews->count();
+            $avg = $product->rating ?? ($totalReviews > 0 ? round($product->reviews->avg('rating'), 1) : 0);
+
+            $starCounts = [];
+            $starPercentages = [];
+            for ($s = 1; $s <= 5; $s++) {
+                $count = $product->reviews->where('rating', $s)->count();
+                $starCounts[$s] = $count;
+                $starPercentages[$s] = $totalReviews > 0 ? ($count / $totalReviews) * 100 : 0;
+            }
+
+            return compact('totalReviews', 'avg', 'starCounts', 'starPercentages');
+        });
+
+        // Unpack for the view
+        $totalReviews = $stats['totalReviews'] ?? 0;
+        $rating = $stats['avg'] ?? 0;
+        $starCounts = $stats['starCounts'] ?? [];
+        $starPercentages = $stats['starPercentages'] ?? [];
+
+        // Ensure product has fields for old view fallbacks
+        $product->rating = $product->rating ?? $rating;
+        $product->total_ulasan = $product->total_ulasan ?? $totalReviews;
+
+        return view('products.detail', compact('product', 'totalReviews', 'rating', 'starCounts', 'starPercentages'));
     }
 }

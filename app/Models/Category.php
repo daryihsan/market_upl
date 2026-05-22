@@ -10,5 +10,13 @@ class Category extends Model
     // pengisian massal (mass assignment) saat menggunakan Category::create() atau $category->update().
     protected $fillable = ['name', 'slug', 'icon_path'];
     
-    public $timestamps = false; 
+    public $timestamps = false;
+
+    /**
+     * Relasi ke produk
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
