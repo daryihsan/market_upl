@@ -76,7 +76,7 @@ class CategoryController extends Controller
         return redirect()->route('platform.categories.index')->with('success', 'Kategori berhasil dihapus.'); // Rute diubah dari platform.categories ke index
     }
 
-    public function showProducts($slug)
+    public function showProducts($slug, Request $request)
     {
         $category = Category::where('slug', $slug)->first();
 
@@ -84,14 +84,70 @@ class CategoryController extends Controller
             abort(404, 'Kategori tidak ditemukan');
         }
 
-        // ambil produk berdasarkan kategori
-        $products = \App\Models\Product::where('category_id', $category->id)
-            ->paginate(12);
+        $filters = $request->all();
+
+        // Base query: produk di kategori ini dari penjual yang aktif dan tidak dideaktivasi oleh admin
+        $query = \App\Models\Product::with('user')
+            ->where('category_id', $category->id)
+            ->whereHas('user', function ($q) {
+                $q->where('status_akun', 'active')
+                  ->where('deactivated_by_admin', false);
+            });
+
+        // Lokasi filter
+        if ($request->filled('lokasi')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->whereIn('kabupaten', (array) $request->lokasi);
+            });
+        }
+
+        // Harga filter (opsional)
+        if ($request->filled('harga_min') || $request->filled('harga_max')) {
+            $min = is_numeric($request->get('harga_min')) ? (float) $request->get('harga_min') : 0;
+            $max = is_numeric($request->get('harga_max')) ? (float) $request->get('harga_max') : 50000000;
+            $query->whereBetween('price', [$min, $max]);
+        }
+
+        // Rating filter
+        if ($request->filled('rating')) {
+            $query->where('rating', '>=', $request->get('rating'));
+        }
+
+        $products = $query->paginate(12)->withQueryString();
 
         $totalProducts = $products->total();
         $currentCategory = $category->name;
 
-        return view('katalog', compact('products', 'category', 'totalProducts', 'currentCategory'));
+        // Data pendukung untuk sidebar dan filter
+        $categories = Category::orderBy('name')->get();
+
+        $locations = \App\Models\Product::select('users.kabupaten')
+            ->join('users', 'products.user_id', '=', 'users.id')
+            ->where('users.status_akun', 'active')
+            ->where('users.deactivated_by_admin', false)
+            ->distinct()
+            ->pluck('users.kabupaten')
+            ->sort()
+            ->values();
+
+        $priceStats = \App\Models\Product::whereHas('user', function ($userQuery) {
+            $userQuery->where('status_akun', 'active')
+                      ->where('deactivated_by_admin', false);
+        })->selectRaw('MIN(price) as min_price, MAX(price) as max_price')->first();
+
+        $minPriceDb = $priceStats->min_price ?? 0;
+        $maxPriceDb = $priceStats->max_price ?? 50000000;
+
+        return view('katalog', [
+            'products' => $products,
+            'totalProducts' => $totalProducts,
+            'currentCategory' => $currentCategory,
+            'filters' => $filters,
+            'categories' => $categories,
+            'locations' => $locations,
+            'minPriceDb' => $minPriceDb,
+            'maxPriceDb' => $maxPriceDb,
+        ]);
     }
 
 
