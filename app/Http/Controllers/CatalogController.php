@@ -13,7 +13,8 @@ class CatalogController extends Controller
         // mengambil 5 produk dengan total ulasan terbanyak dan relasi user (hanya dari penjual active)
         $trendingProducts = Product::with('user')
             ->whereHas('user', function ($userQuery) {
-                $userQuery->where('status_akun', 'active');
+                $userQuery->where('status_akun', 'active')
+                          ->where('deactivated_by_admin', false);
             })
             ->orderByDesc('total_ulasan')
             ->take(5)
@@ -35,7 +36,8 @@ class CatalogController extends Controller
         $query = Product::query()
             ->with('user')
             ->whereHas('user', function ($userQuery) {
-                $userQuery->where('status_akun', 'active');
+                $userQuery->where('status_akun', 'active')
+                          ->where('deactivated_by_admin', false);
             });
 
         // kategori
@@ -73,7 +75,9 @@ class CatalogController extends Controller
 
         if ($request->filled('lokasi')) {
             $query->whereHas('user', function ($q) use ($request) {
-                $q->whereIn('kabupaten', $request->lokasi);
+                $q->whereIn('kabupaten', $request->lokasi)
+                  ->where('status_akun', 'active')
+                  ->where('deactivated_by_admin', false);
             });
         }
 
@@ -92,7 +96,8 @@ class CatalogController extends Controller
         // total produk sesuai filter
         $totalQuery = Product::query()
             ->whereHas('user', function ($userQuery) {
-                $userQuery->where('status_akun', 'active');
+                $userQuery->where('status_akun', 'active')
+                          ->where('deactivated_by_admin', false);
             });
 
         if ($categoryInput) {
@@ -107,7 +112,9 @@ class CatalogController extends Controller
 
         if (!empty($location)) {
             $totalQuery->whereHas('user', function ($q) use ($location) {
-                $q->whereIn('kabupaten', $location);
+                $q->whereIn('kabupaten', $location)
+                  ->where('status_akun', 'active')
+                  ->where('deactivated_by_admin', false);
                 // ->orWhereIn('kota', $location);
             });
         }
@@ -126,7 +133,8 @@ class CatalogController extends Controller
         // lokasi dari penjual yang active
         $locations = Product::select('users.kabupaten')
             ->join('users', 'products.user_id', '=', 'users.id')
-            ->where('users.status_akun', 'active')
+            ->where('users.status_akun', 'active') 
+            ->where('users.deactivated_by_admin', false)
             ->distinct()
             ->pluck('users.kabupaten')
             ->sort()
@@ -135,6 +143,7 @@ class CatalogController extends Controller
         // harga min-max dari produk active
         $priceStats = Product::whereHas('user', function ($userQuery) {
             $userQuery->where('status_akun', 'active');
+            $userQuery->where('deactivated_by_admin', false);
         })->selectRaw('MIN(price) as min_price, MAX(price) as max_price')->first();
 
         $minPriceDb = $priceStats->min_price ?? 0;

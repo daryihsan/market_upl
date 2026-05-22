@@ -20,7 +20,8 @@ class SearchController extends Controller
             ->with(['user', 'category'])
             ->whereHas('user', function ($userQuery) {
                 // Hanya tampilkan produk dari penjual yang status_akun = 'active'
-                $userQuery->where('status_akun', 'active');
+                $userQuery->where('status_akun', 'active')
+                          ->where('deactivated_by_admin', false);
             });
 
         // Filter pencarian: nama produk
@@ -31,7 +32,9 @@ class SearchController extends Controller
         // Filter pencarian: nama toko
         if ($toko !== '') {
             $query->whereHas('user', function ($userQuery) use ($toko) {
-                $userQuery->where('nama_toko', 'like', "%{$toko}%");
+                $userQuery->where('nama_toko', 'like', "%{$toko}%")
+                          ->where('status_akun', 'active')
+                          ->where('deactivated_by_admin', false);
             });
         }
 
@@ -43,14 +46,19 @@ class SearchController extends Controller
         // Filter provinsi
         if ($provinsi !== '') {
             $query->whereHas('user', function ($userQuery) use ($provinsi) {
-                $userQuery->where('provinsi', $provinsi);
+                $userQuery->where('provinsi', $provinsi)
+                          ->where('status_akun', 'active')
+                          ->where('deactivated_by_admin', false);
             });
         }
 
         // Filter kabupaten
         if ($kabupaten !== '') {
+
             $query->whereHas('user', function ($userQuery) use ($kabupaten) {
-                $userQuery->where('kabupaten', $kabupaten);
+                $userQuery->where('kabupaten', $kabupaten)
+                          ->where('status_akun', 'active')
+                          ->where('deactivated_by_admin', false);
             });
         }
 
@@ -80,6 +88,7 @@ class SearchController extends Controller
 
         // Get all unique provinsi dari penjual yang active
         $allProvinsi = Product::select('users.provinsi')
+            ->where('users.deactivated_by_admin', false)
             ->join('users', 'products.user_id', '=', 'users.id')
             ->where('users.status_akun', 'active')
             ->distinct()
@@ -88,15 +97,16 @@ class SearchController extends Controller
             ->values();
 
         // Get all unique kabupaten dari penjual yang active
-        $allKabupaten = Product::select('users.kabupaten')
+        $allKabupatenQuery = Product::select('users.kabupaten')
             ->join('users', 'products.user_id', '=', 'users.id')
-            ->where('users.status_akun', 'active');
+            ->where('users.status_akun', 'active')
+            ->where('users.deactivated_by_admin', false);
 
         if ($provinsi !== '') {
-            $allKabupaten = $allKabupaten->where('users.provinsi', $provinsi);
+            $allKabupatenQuery = $allKabupatenQuery->where('users.provinsi', $provinsi);
         }
 
-        $allKabupaten = $allKabupaten->distinct()
+        $allKabupaten = $allKabupatenQuery->distinct()
             ->pluck('users.kabupaten')
             ->sort()
             ->values();
@@ -105,6 +115,7 @@ class SearchController extends Controller
         $allCategories = Category::whereHas('products', function ($productQuery) {
             $productQuery->whereHas('user', function ($userQuery) {
                 $userQuery->where('status_akun', 'active');
+                $userQuery->where('deactivated_by_admin', false);
             });
         })->get();
 
