@@ -32,6 +32,7 @@ class AuthController extends Controller
 
         // Set status ke 'rejected' (dianggap nonaktif mandiri)
         $user->status_akun = 'rejected'; 
+        $user->deactivated_by_admin = false; // tandai nonaktif oleh user (bukan admin)
         $user->save();
 
         // Logout user setelah nonaktif

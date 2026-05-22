@@ -21,6 +21,10 @@ class SellerController extends Controller
         if (!$user) {
             return redirect()->route('login.login'); 
         }
+        // Blokir hanya jika pending atau dinonaktifkan oleh admin
+        if ($user->status_akun === 'pending' || ($user->status_akun === 'rejected' && ($user->deactivated_by_admin ?? false))) {
+            return Redirect::back()->with('error', 'Toko Anda saat ini tidak aktif. Silakan hubungi admin untuk informasi lebih lanjut.');
+        }
 
         $userId = $user->id; 
         $activeTab = $request->query('tab', 'overview');
@@ -184,8 +188,8 @@ class SellerController extends Controller
         $productData['total_ulasan'] = 0;
         
         if ($request->hasFile('foto_produk')) {
-            $fotoPath = $request->file('foto_produk')->store('public/product_images'); 
-            $productData['image_path'] = Storage::url($fotoPath);
+            $fotoPath = $request->file('foto_produk')->store('product_images', 'public');
+            $productData['image_path'] = Storage::disk('public')->url($fotoPath);
         }
 
         unset($productData['foto_produk'], $productData['status_override']); 
@@ -242,11 +246,11 @@ class SellerController extends Controller
         
         if ($request->hasFile('foto_produk')) {
             if ($product->image_path) {
-                $path = str_replace(config('app.url') . '/storage', 'public', $product->image_path);
-                Storage::delete($path);
+                $oldPath = str_replace('/storage/', '', $product->image_path);
+                Storage::disk('public')->delete($oldPath);
             }
-            $fotoPath = $request->file('foto_produk')->store('public/product_images');
-            $productData['image_path'] = Storage::url($fotoPath);
+            $fotoPath = $request->file('foto_produk')->store('product_images', 'public');
+            $productData['image_path'] = Storage::disk('public')->url($fotoPath);
         }
 
         unset($productData['foto_produk'], $productData['status_override']); 
@@ -278,11 +282,13 @@ class SellerController extends Controller
             return Redirect::back()->with('error', 'Anda tidak berhak menghapus produk ini.');
         }
         
-        $product->variants()->delete();
+        if (method_exists($product, 'variants')) {
+            $product->variants()->delete();
+        }
         
         if ($product->image_path) {
-            $path = str_replace(config('app.url') . '/storage', 'public', $product->image_path);
-            Storage::delete($path);
+            $oldPath = str_replace('/storage/', '', $product->image_path);
+            Storage::disk('public')->delete($oldPath);
         }
 
         $product->delete();
@@ -305,12 +311,14 @@ class SellerController extends Controller
         
         if ($user->status_akun === 'active' && $newStatus === 'rejected') {
             $user->status_akun = 'rejected';
+            $user->deactivated_by_admin = false;
             $user->save();
             return Redirect::back()->with('success', 'Toko Anda berhasil dinonaktifkan. Produk tidak akan muncul di katalog.');
         } 
         
         elseif ($user->status_akun === 'rejected' && $newStatus === 'active') {
             $user->status_akun = 'active';
+            $user->deactivated_by_admin = false;
             $user->save();
             return Redirect::back()->with('success', 'Toko Anda berhasil diaktifkan kembali. Produk Anda kini tampil di katalog.');
         }
