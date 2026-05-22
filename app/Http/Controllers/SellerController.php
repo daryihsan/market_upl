@@ -40,7 +40,8 @@ class SellerController extends Controller
         $sellerProductIds = Product::where('user_id', $userId)->pluck('id');
         $reviews = Review::whereIn('product_id', $sellerProductIds)->get();
         $totalReviewsCount = $reviews->count();
-        $reviewsByProvince = $reviews->groupBy('provinsi')->map->count();
+        // Gunakan field 'province' dari tabel reviews (kolom migrasi dan model menggunakan 'province')
+        $reviewsByProvince = $reviews->groupBy('province')->map->count();
 
         $distributionData = [];
         $sortedProvinces = $reviewsByProvince->sortDesc()->take(3); // Ambil 3 provinsi teratas
