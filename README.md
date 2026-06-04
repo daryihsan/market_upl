@@ -26,26 +26,26 @@ Platform marketplace modern yang menghubungkan pembeli dan penjual dengan sistem
 
 ## 🚀 Fitur Utama
 
-### Untuk Pembeli
+### Untuk Pengunjung
 - ✅ **Browsing Katalog**: Jelajahi produk dengan sistem kategori yang terstruktur
-- 🔍 **Pencarian Produk**: Fitur pencarian yang powerful dan responsif
-- ⭐ **Review & Rating**: Buat ulasan dan rating untuk produk yang dibeli
+- 🔍 **Pencarian Produk**: Fitur pencarian responsif
+- ⭐ **Review & Rating**: Buat ulasan dan rating untuk produk
 - 📱 **Interface Responsif**: Desain modern dengan Tailwind CSS
 
 ### Untuk Penjual
-- 📦 **Manajemen Produk**: CRUD lengkap untuk produk dan kategori
-- 🏪 **Dashboard Penjual**: Overview penjualan dan performa
+- 📦 **Manajemen Produk**: CRUD lengkap untuk produk
+- 🏪 **Dashboard Penjual**: Overview produk dan rating
 - 📊 **Laporan Penjualan**: Generate laporan dalam format PDF
 - ✔️ **Verifikasi Akun**: Proses registrasi bertahap dengan verifikasi email
 - 📄 **Upload Dokumen**: Upload KTP dan dokumen verifikasi
 
 ### Sistem Admin
-- 👥 **Manajemen Pengguna**: Kelola penjual dan pembeli
+- 👥 **Manajemen Pengguna**: Kelola penjual
 - 🔐 **Kontrol Akun**: Deaktivasi akun untuk penjual yang tidak memenuhi kriteria
 - 📋 **Monitoring Status**: Tracking status verifikasi dan aktivasi penjual
 
 ### Sistem Keamanan & Verifikasi
-- 🔐 **Autentikasi Tertingkat**: Sistem login terpisah untuk pembeli, penjual, dan admin
+- 🔐 **Autentikasi Tertingkat**: Sistem login terpisah untuk pengunjung, penjual, dan admin
 - 📧 **Verifikasi Email**: Token-based email verification untuk keamanan
 - 🔑 **OTP Verification**: Sistem OTP untuk verifikasi tambahan
 - 📄 **Document Verification**: Upload dan verifikasi KTP untuk penjual
@@ -118,18 +118,7 @@ Platform marketplace modern yang menghubungkan pembeli dan penjual dengan sistem
    php artisan key:generate
    ```
 
-5. **Konfigurasi Database**
-   Edit file `.env`:
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=quadmarket_db
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
-
-6. **Database Migration & Seeding**
+5. **Database Migration & Seeding**
    ```bash
    # Jalankan migration
    php artisan migrate
@@ -138,7 +127,7 @@ Platform marketplace modern yang menghubungkan pembeli dan penjual dengan sistem
    php artisan db:seed
    ```
 
-7. **Generate IDE Helper** (optional untuk development)
+6. **Generate IDE Helper** (optional untuk development)
    ```bash
    php artisan ide-helper:generate
    php artisan ide-helper:models
@@ -147,47 +136,6 @@ Platform marketplace modern yang menghubungkan pembeli dan penjual dengan sistem
 ---
 
 ## ⚙️ Konfigurasi
-
-### Environment Variables (.env)
-```env
-# Aplikasi
-APP_NAME=QuadMarket
-APP_ENV=local
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-
-# Database
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=quadmarket_db
-DB_USERNAME=root
-DB_PASSWORD=
-
-# Enkripsi & Keamanan
-APP_KEY=base64:xxxxx...
-BCRYPT_ROUNDS=12
-
-# Mail Configuration (untuk verifikasi email)
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.mailtrap.io
-MAIL_PORT=2525
-MAIL_USERNAME=your_username
-MAIL_PASSWORD=your_password
-MAIL_FROM_ADDRESS=noreply@quadmarket.local
-
-# Session
-SESSION_DRIVER=database
-SESSION_LIFETIME=120
-
-# Cache & Queue
-CACHE_STORE=database
-QUEUE_CONNECTION=database
-
-# Logging
-LOG_CHANNEL=stack
-LOG_LEVEL=debug
-```
 
 ### Konfigurasi Filesystem
 Untuk production, gunakan storage disk yang tepat:
@@ -201,7 +149,7 @@ php artisan tinker
 
 # Dalam tinker shell:
 >>> $admin = new \App\Models\User();
->>> $admin->email = 'admin@quadmarket.local';
+>>> $admin->email = 'admin@domain.co';
 >>> $admin->password = bcrypt('password');
 >>> $admin->role = 'admin';
 >>> $admin->save();
@@ -226,7 +174,7 @@ market_upl/
 │   │   │   └── ...
 │   │   └── Middleware/           # HTTP Middleware
 │   ├── Models/                   # Eloquent Models
-│   │   ├── User.php              # Model user (pembeli & penjual)
+│   │   ├── User.php              # Model user (penjual)
 │   │   ├── Seller.php            # Model seller khusus
 │   │   ├── Product.php           # Model produk
 │   │   ├── Category.php          # Kategori produk
@@ -308,14 +256,9 @@ market_upl/
 ### Skema Database Utama
 
 **Users Table**
-- Primary user authentication untuk pembeli
+- Primary user authentication untuk penjual
 - Menyimpan: email, password, nama toko, alamat, dokumen
-- Status verifikasi email
-
-**Sellers Table**
-- Authentication terpisah untuk penjual
-- Menyimpan: nama toko, NPWP, dokumen pendukung, portofolio
-- Status verifikasi dan deaktivasi admin
+- Status verifikasi email dan deaktivasi admin
 
 **Products Table**
 - Detail produk: nama, deskripsi, harga, stok
@@ -327,7 +270,7 @@ market_upl/
 - Support untuk kategori bersarang
 
 **Reviews Table**
-- Rating dan ulasan dari pembeli
+- Rating dan ulasan dari pengunjung
 - Relasi ke produk dan user
 
 **OTP Verifications Table**
@@ -335,39 +278,12 @@ market_upl/
 - Tracking otentikasi 2-faktor
 
 **User Documents Table**
-- Menyimpan dokumen pengguna (KTP, NPWP, dll)
+- Menyimpan dokumen pengguna (KTP dll)
 - Verifikasi status dokumen
 
 **Sessions Table**
 - Laravel session management
 - Database-driven session storage
-
-### Diagram Relasi Model
-```
-Users (1) ──────── (Many) Products
-    │
-    └──── (Many) Reviews
-    
-Sellers (1) ────── (Many) Products
-    │
-    └──── (1) UserDocuments
-
-Products (1) ────── (Many) ProductImages
-    │
-    └──── (Many) Reviews
-    │
-    └──── (1) Category
-
-Categories (1) ──── (Many) Products
-
-Reviews (Many) ──── (1) Users
-    │
-    └──── (1) Products
-
-OTPVerifications (1) ── (1) Users
-
-UserDocuments (1) ──── (1) Sellers
-```
 
 ---
 
@@ -553,12 +469,8 @@ php artisan migrate:fresh
 - Dokumen: file_ktp, foto_pic
 - Status verifikasi: email_verified_at, status_akun
 
-**Create Sellers Table**
-- Sama seperti Users tapi untuk seller
-- Additional fields: no_ktp_pic, nik
-
 **Create Products Table**
-- user_id (FK to sellers)
+- user_id (FK to users)
 - category_id (FK to categories)
 - name, description, price, stock
 - condition (baru/bekas)
@@ -722,28 +634,6 @@ Jika ada pertanyaan atau issue:
 - Buat issue di GitHub Repository
 - Email: support@quadmarket.local
 - Discord: [QuadMarket Community](https://discord.gg/quadmarket)
-
----
-
-## 🎯 Roadmap
-
-### v1.1 (Q3 2026)
-- [ ] Sistem pembayaran terintegrasi (Stripe, GCash)
-- [ ] Fitur wishlist untuk pembeli
-- [ ] Advanced analytics untuk penjual
-- [ ] Push notifications
-
-### v1.2 (Q4 2026)
-- [ ] Mobile app (React Native)
-- [ ] Live chat support
-- [ ] Influencer program
-- [ ] Subscription plans
-
-### v2.0 (2027)
-- [ ] B2B features
-- [ ] Dropshipping integration
-- [ ] AI-powered recommendations
-- [ ] Multi-currency support
 
 ---
 
