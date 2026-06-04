@@ -55,7 +55,7 @@ Platform marketplace modern yang menghubungkan pembeli dan penjual dengan sistem
 ## 🛠️ Teknologi
 
 **Backend:**
-- **Laravel 12** - Framework PHP modern
+- **Laravel 11** - Framework PHP modern
 - **PHP 8.2+** - Bahasa pemrograman
 - **MySQL** - Database management system
 - **Composer** - PHP dependency manager
