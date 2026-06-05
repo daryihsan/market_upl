@@ -51,7 +51,7 @@ class SearchSuccessTest extends TestCase
             'Status HTTP harus 200 ketika pencarian berhasil.'
         );
 
-        // Verifikasi response memiliki struktur yang benar
+        // Verifikasi response
         $this->assertArrayHasKey('data', $response);
         $this->assertArrayHasKey('success', $response);
         $this->assertTrue($response['success']);
